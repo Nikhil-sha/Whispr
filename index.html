@@ -6,7 +6,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>Whispr AI</title>
 	<script src="https://cdn.tailwindcss.com"></script>
-	<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 	<style>
 		@keyframes subtle-pulse {
@@ -47,50 +46,79 @@
 	</style>
 </head>
 
-<body class="flex flex-col min-h-screen ai-gradient-bg">
+<body class="flex flex-col min-h-dvh ai-gradient-bg">
+	<!-- Toast Container -->
+	<div id="toastContainer" class="fixed top-4 right-4 space-y-2 z-50"></div>
+	
+	<!-- Toast Animation -->
+	<style>
+		@keyframes fadeInOut {
+			0% {
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+			
+			10%,
+			90% {
+				opacity: 1;
+				transform: translateY(0);
+			}
+			
+			100% {
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+		}
+		
+		.animate-fadeInOut {
+			animation: fadeInOut 3s ease forwards;
+		}
+	</style>
+	
 	<!-- Header -->
-	<header class="ai-card px-4 py-3 mx-3 mt-3 rounded-xl flex justify-between items-center gap-4">
+	<header class="ai-card px-4 py-3 mx-3 mt-3 rounded-2xl flex justify-between items-center gap-4">
 		<div class="flex-shrink-0 flex items-center space-x-2">
-			<div class="w-6 h-6 rounded-md bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+			<div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
 				<i class="ri-ai-generate text-xs text-white"></i>
 			</div>
 			<h1 class="text-base font-medium text-gray-800">Whispr AI</h1>
 		</div>
-		<span id="my-id" class="text-xs text-gray-600 truncate"></span>
+		<span id="my-id" class="truncate text-xs text-gray-600"></span>
 	</header>
 	
 	<!-- Main Content -->
-	<main class="flex-1 p-3">
-		<div class="relative w-full aspect-[9/16] max-w-md mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+	<main class="grow h-8 p-3 flex justify-center items-center">
+		<div class="relative h-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
 			<!-- Remote Video -->
 			<video id="remoteVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover bg-gray-300"></video>
 			
 			<!-- Local PIP Video -->
-			<div class="absolute bottom-4 right-4 w-1/4 aspect-video rounded-lg overflow-hidden ai-pip bg-black">
+			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl overflow-hidden ai-pip bg-black">
 				<video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
 			</div>
 		</div>
 	</main>
 	
 	<!-- Controls -->
-	<footer class="ai-card px-4 py-3 mx-3 mb-3 rounded-xl">
+	<footer class="ai-card px-4 py-3 mx-3 mb-3 rounded-2xl">
 		<div class="flex justify-center space-x-4">
-			<button onclick="toggleMute()" class="ai-btn w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
+			<button onclick="toggleMute()" class="ai-btn w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
 				<i id="micIcon" class="ri-mic-line"></i>
 			</button>
-			<button onclick="toggleVideo()" class="ai-btn w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
+			<button onclick="toggleVideo()" class="ai-btn w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
 				<i id="videoIcon" class="ri-camera-line"></i>
 			</button>
-			<button onclick="endCall()" class="ai-btn w-10 h-10 rounded-xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white hover:from-red-500 hover:to-red-600">
+			<button onclick="endCall()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white hover:from-red-500 hover:to-red-600">
 				<i class="ri-phone-line"></i>
 			</button>
-			<button onclick="callPeer()" class="ai-btn w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
-				<i class="ri-add-line"></i>
+			<button onclick="callPeer()" class="ai-btn w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
+				<i class="ri-customer-service-line"></i>
 			</button>
 		</div>
 	</footer>
 	
-	<script src="./script.js" type="text/javascript" charset="utf-8"></script>
+	<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+	<script src="./script.js"></script>
 </body>
 
 </html>
