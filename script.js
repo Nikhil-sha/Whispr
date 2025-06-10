@@ -38,7 +38,6 @@ function init(myId) {
   navigator.clipboard.writeText(`https://nikhil-sha.github.io/Whispr/?peer=${myId}`)
    .then(() => showToast('Ready. Share your ID to start a call.'))
    .catch(() => showToast('Clipboard access denied. Copy the link manually.', 'error'));
-  showToast('Ready. Share your ID to start a call.');
  }
 }
 
