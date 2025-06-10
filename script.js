@@ -26,9 +26,26 @@ function showToast(message, type = 'info') {
  }, 3000);
 }
 
+function init(myId) {
+ const urlParams = new URLSearchParams(window.location.search);
+ const peerIdToJoin = urlParams.get('peer');
+ 
+ if (peerIdToJoin) {
+  showToast(`Connecting to peer: ${peerIdToJoin}`);
+  callPeer(peerIdToJoin);
+ }
+ else {
+  navigator.clipboard.writeText(`https://nikhil-sha.github.io/Whispr/?peer=${myId}`)
+   .then(() => showToast('Ready. Share your ID to start a call.'))
+   .catch(() => showToast('Clipboard access denied. Copy the link manually.', 'error'));
+  showToast('Ready. Share your ID to start a call.');
+ }
+}
+
 // PeerJS ID Display
 peer.on('open', id => {
  myIdDisplay.textContent = `Your ID: ${id}`;
+ init(id);
 });
 
 // Handle incoming call
@@ -46,8 +63,8 @@ peer.on('call', call => {
 });
 
 // Call a peer
-function callPeer() {
- const remoteId = prompt("Enter peer ID to call:");
+function callPeer(peerId = "ask") {
+ const remoteId = peerId === "ask" ? prompt("Enter peer ID to call:") : peerId;
  if (!remoteId) return;
  
  getMediaStream().then(stream => {
