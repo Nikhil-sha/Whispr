@@ -97,7 +97,10 @@ peer.on('error', err => {
 // Call a peer
 function callPeer(peerId = "ask") {
  const remoteId = peerId === "ask" ? prompt("Enter peer ID to call:") : peerId;
- if (!remoteId) return;
+ if (!remoteId) {
+  showToast('Failed to call', 'error');
+  return;
+ };
  
  getMediaStream().then(stream => {
   localStream = stream;
