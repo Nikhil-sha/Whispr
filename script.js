@@ -26,8 +26,8 @@ function showToast(message, type = 'info') {
  }, 3000);
 }
 
-function shareLink(myId) {
- const url = `https://nikhil-sha.github.io/Whispr/?peer=${myId}`;
+function shareLink() {
+ const url = `https://nikhil-sha.github.io/Whispr/?peer=${peer.id}`;
  
  if (navigator.share) {
   navigator.share({
