@@ -86,7 +86,7 @@ peer.on('disconnected', () => {
 
 peer.on('close', () => {
  showToast('Connection closed.');
- cleanupCall();
+ endCall();
 });
 
 peer.on('error', err => {
