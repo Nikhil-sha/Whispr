@@ -100,17 +100,20 @@
 	<!-- Controls -->
 	<footer class="ai-card px-4 py-3 mx-3 mb-3 rounded-2xl">
 		<div class="flex justify-center space-x-4">
-			<button onclick="toggleMute()" class="ai-btn w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
+			<button onclick="toggleMute()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white hover:from-pink-500 hover:to-pink-600">
 				<i id="micIcon" class="ri-mic-line"></i>
 			</button>
-			<button onclick="toggleVideo()" class="ai-btn w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50">
+			<button onclick="toggleVideo()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white hover:from-blue-500 hover:to-blue-600">
 				<i id="videoIcon" class="ri-camera-line"></i>
+			</button>
+			<button onclick="callPeer()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center text-white hover:from-green-500 hover:to-green-600">
+				<i class="ri-user-add-line"></i>
 			</button>
 			<button onclick="endCall()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white hover:from-red-500 hover:to-red-600">
 				<i class="ri-user-unfollow-line"></i>
 			</button>
-			<button onclick="callPeer()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center text-white hover:from-green-500 hover:to-green-600">
-				<i class="ri-user-add-line"></i>
+			<button onclick="shareLink()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white hover:from-orange-500 hover:to-orange-600">
+				<i class="ri-share-line"></i>
 			</button>
 		</div>
 	</footer>
