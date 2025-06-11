@@ -87,13 +87,11 @@
 	</header>
 	
 	<!-- Main Content -->
-	<main class="grow h-8 p-3 flex justify-center items-center">
+	<main class="grow h-0 p-3 flex justify-center items-center">
 		<div class="relative h-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-			<!-- Remote Video -->
 			<video id="remoteVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover bg-gray-300"></video>
 			
-			<!-- Local PIP Video -->
-			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl overflow-hidden ai-pip bg-black">
+			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl overflow-hidden ai-pip">
 				<video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
 			</div>
 		</div>

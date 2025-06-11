@@ -26,25 +26,43 @@ function showToast(message, type = 'info') {
  }, 3000);
 }
 
-function init(myId) {
+function shareLink(myId) {
+ const url = `https://nikhil-sha.github.io/Whispr/?peer=${myId}`;
+ 
+ if (navigator.share) {
+  navigator.share({
+   title: 'Join my Whispr call!',
+   text: 'Click to connect with me:',
+   url: url
+  }).then(() => {
+   showToast('Link shared successfully!');
+  }).catch(err => {
+   console.error('Sharing failed:', err);
+   showToast('Share failed. Try copying the link.', 'error');
+  });
+ } else {
+  // Fallback for browsers without Web Share API
+  navigator.clipboard.writeText(url)
+   .then(() => showToast('Link copied to clipboard!'))
+   .catch(() => showToast('Failed to copy link.', 'error'));
+ }
+}
+
+function init() {
  const urlParams = new URLSearchParams(window.location.search);
  const peerIdToJoin = urlParams.get('peer');
  
  if (peerIdToJoin) {
   showToast(`Connecting to peer: ${peerIdToJoin}`);
   callPeer(peerIdToJoin);
- }
- else {
-  navigator.clipboard.writeText(`https://nikhil-sha.github.io/Whispr/?peer=${myId}`)
-   .then(() => showToast('Ready. Share your ID to start a call.'))
-   .catch(() => showToast('Clipboard access denied. Copy the link manually.', 'error'));
+  return;
  }
 }
 
 // PeerJS ID Display
 peer.on('open', id => {
  myIdDisplay.textContent = `Your ID: ${id}`;
- init(id);
+ init();
 });
 
 // Handle incoming call
@@ -59,6 +77,21 @@ peer.on('call', call => {
  }).catch(err => {
   showToast('Error accessing media devices.', 'error');
  });
+});
+
+peer.on('disconnected', () => {
+ showToast('Connection lost. Trying to reconnect...');
+ peer.reconnect();
+});
+
+peer.on('close', () => {
+ showToast('Connection closed.');
+ cleanupCall();
+});
+
+peer.on('error', err => {
+ console.error('Peer error:', err);
+ showToast('A peer error occurred.', 'error');
 });
 
 // Call a peer
