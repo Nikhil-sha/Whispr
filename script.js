@@ -137,7 +137,10 @@ function getMediaStream() {
 
 // Mute/Unmute mic
 function toggleMute() {
- if (!localStream) return;
+ if (!localStream) {
+  showToast('You are not in a call.');
+  return;
+ };
  audioEnabled = !audioEnabled;
  localStream.getAudioTracks().forEach(track => track.enabled = audioEnabled);
  micIcon.className = audioEnabled ? 'ri-mic-line' : 'ri-mic-off-line';
@@ -146,7 +149,10 @@ function toggleMute() {
 
 // Toggle camera
 function toggleVideo() {
- if (!localStream) return;
+ if (!localStream) {
+  showToast('You are not in a call.');
+  return
+ };
  videoEnabled = !videoEnabled;
  localStream.getVideoTracks().forEach(track => track.enabled = videoEnabled);
  videoIcon.className = videoEnabled ? 'ri-camera-line' : 'ri-camera-off-line';
