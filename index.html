@@ -83,15 +83,14 @@
 			</div>
 			<h1 class="text-base font-medium text-gray-800">Whispr</h1>
 		</div>
-		<!-- <span id="my-id" class="truncate text-xs text-gray-600"></span> -->
 		
-		<div class="relative">
-			<div id="quality" class="peer flex items-center gap-2">
+		<details class="relative marker:content-none">
+			<summary id="quality" class="flex items-center gap-2">
 				<div class="size-3 rounded-full bg-green-400 shadow-sm"></div>
-				<span class="text-gray-800 text-xs font-bold">Good</span>
-			</div>
+				<span class="text-gray-800 text-xs font-bold">Excellent</span>
+			</summary>
 			
-			<div class="hidden peer-hover:flex absolute top-6 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex-col justify-around items-start gap-2">
+			<div class="absolute top-6 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex flex-col justify-around items-start gap-2">
 				<div id="rtt" class="text-nowrap text-gray-800 text-xs font-medium">
 					RTT:
 					<span></span>
@@ -106,7 +105,7 @@
 					Packets Lost:
 					<span></span>
 				</div>
-			</div>
+		</details>
 		</div>
 	</header>
 	
@@ -114,11 +113,11 @@
 	<main class="grow h-0 p-3 flex justify-center items-center">
 		<div class="relative h-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
 			<video id="remoteVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover"></video>
-
+			
 			<button onclick="toggleFullScreen()" class="absolute top-4 right-4 ai-btn w-10 h-10 bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-2xl shadow-sm">
 				<i class="ri-fullscreen-line"></i>
 			</button>
-
+			
 			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl shadow-sm overflow-hidden ai-pip">
 				<video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
 			</div>

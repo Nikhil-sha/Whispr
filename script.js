@@ -1,3 +1,4 @@
+const baseUrl = window.location.origin + window.location.pathname;
 const peer = new Peer(null, { debug: 3 });
 let localStream;
 let currentCall;
@@ -19,18 +20,24 @@ const PACKETS = document.getElementById('packets');
 let audioEnabled = true;
 let videoEnabled = true;
 
+// Add this once when initializing your app
+toastContainer.addEventListener('click', (e) => {
+ if (e.target.closest('.ai-btn')) {
+  e.target.closest('div').remove();
+ }
+});
+
 function showToast(message, type = 'info') {
  const toast = document.createElement('div');
- toast.className = `w-fit px-5 py-3 rounded-lg text-white text-sm shadow-lg ${
+ toast.className = `flex items-center gap-5 w-fit px-6 py-3 rounded-xl text-white text-sm shadow-lg ${
     type === 'error' ? 'bg-red-500' : 'bg-gray-800'
   } animate-fadeInOut`;
- toast.textContent = message;
+ toast.innerHTML = message + `<button class="ai-btn size-8 rounded-lg flex items-center justify-center text-white bg-white/10">
+  <i class="ri-close-line"></i>
+ </button>`;
  
  toastContainer.appendChild(toast);
- 
- setTimeout(() => {
-  toast.remove();
- }, 3000);
+ setTimeout(() => toast.remove(), 3000);
 }
 
 function updateIndicator(element, classes, text) {
@@ -45,7 +52,7 @@ function updateIndicator(element, classes, text) {
 }
 
 function toggleFullScreen() {
- if (!document.fullscreenElement) {
+ if (currentCall && !document.fullscreenElement) {
   remoteVideo.requestFullscreen();
  } else {
   document.exitFullscreen?.();
@@ -120,8 +127,8 @@ peer.on('error', err => {
 });
 
 // Call a peer
-function callPeer(peerId = "ask") {
- const remoteId = peerId === "ask" ? prompt("Enter peer ID to call:") : peerId;
+function callPeer(peerId = 'ask') {
+ const remoteId = peerId === 'ask' ? prompt('Enter peer ID to call:') : peerId;
  if (!remoteId) {
   showToast('Failed to call', 'error');
   return;
