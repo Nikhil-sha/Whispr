@@ -1,20 +1,27 @@
-const peer = new Peer();
+const peer = new Peer(null, { debug: 3 });
 let localStream;
 let currentCall;
+let lastBytesSent = 0;
+let lastTimestamp = 0;
+let connCheckupInterval = null;
+let rtcObject = null;
 
 // DOM Elements
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
-const myIdDisplay = document.getElementById('my-id');
 const micIcon = document.getElementById('micIcon');
 const videoIcon = document.getElementById('videoIcon');
+const QUALITY = document.getElementById('quality');
+const RTT = document.getElementById('rtt');
+const BITRATE = document.getElementById('bitrate');
+const PACKETS = document.getElementById('packets');
 
 let audioEnabled = true;
 let videoEnabled = true;
 
 function showToast(message, type = 'info') {
  const toast = document.createElement('div');
- toast.className = `mb-2 px-4 py-2 rounded-lg text-white text-sm shadow-lg ${
+ toast.className = `w-fit px-5 py-3 rounded-lg text-white text-sm shadow-lg ${
     type === 'error' ? 'bg-red-500' : 'bg-gray-800'
   } animate-fadeInOut`;
  toast.textContent = message;
@@ -24,6 +31,25 @@ function showToast(message, type = 'info') {
  setTimeout(() => {
   toast.remove();
  }, 3000);
+}
+
+function updateIndicator(element, classes, text) {
+ const nodes = element.children;
+ 
+ if (nodes.length === 1) {
+  nodes[0].textContent = text;
+ } else {
+  nodes[0].classList = classes;
+  nodes[1].textContent = text;
+ }
+}
+
+function toggleFullScreen() {
+ if (!document.fullscreenElement) {
+  remoteVideo.requestFullscreen();
+ } else {
+  document.exitFullscreen?.();
+ }
 }
 
 function shareLink() {
@@ -61,7 +87,6 @@ function init() {
 
 // PeerJS ID Display
 peer.on('open', id => {
- myIdDisplay.textContent = `Your ID: ${id}`;
  init();
 });
 
@@ -131,6 +156,10 @@ function setupCallEvents(call) {
   showToast('An error occurred during the call.', 'error');
   endCall();
  });
+ 
+ rtcObject = call.peerConnection;
+ if (connCheckupInterval) clearInterval(connCheckupInterval);
+ connCheckupInterval = setInterval(updateConnectionQuality, 2000);
 }
 
 // Get User Media
@@ -162,14 +191,48 @@ function toggleVideo() {
  showToast(videoEnabled ? 'Camera on' : 'Camera off');
 }
 
+function updateConnectionQuality() {
+ rtcObject.getStats(null).then(stats => {
+  stats.forEach(report => {
+   if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+    const rtt = report.currentRoundTripTime * 1000; // convert to ms
+    
+    if (rtt < 100) {
+     updateIndicator(QUALITY, 'w-3 h-3 rounded-full bg-green-500 shadow-md animate-pulse', 'Excellent');
+    } else if (rtt < 250) {
+     updateIndicator(QUALITY, 'w-3 h-3 rounded-full bg-yellow-500 shadow-md animate-pulse', 'Good');
+    } else if (rtt < 500) {
+     updateIndicator(QUALITY, 'w-3 h-3 rounded-full bg-orange-500 shadow-md animate-pulse', 'Poor');
+    } else {
+     updateIndicator(QUALITY, 'w-3 h-3 rounded-full bg-red-500 shadow-md animate-pulse', 'Very Poor');
+    }
+    
+    updateIndicator(RTT, null, `${rtt.toFixed(2)} ms`)
+   }
+   
+   if (report.type === 'outbound-rtp' && report.kind === 'video') {
+    const bytesSent = report.bytesSent;
+    const now = report.timestamp;
+    
+    if (lastTimestamp) {
+     const bitrate = 8 * (bytesSent - lastBytesSent) / ((now - lastTimestamp) / 1000); // bits/sec
+     const kbps = (bitrate / 1000).toFixed(2);
+     updateIndicator(BITRATE, null, `${kbps} kbps`);
+    }
+    
+    lastBytesSent = bytesSent;
+    lastTimestamp = now;
+   }
+   
+   if (report.type === 'inbound-rtp' && report.kind === 'video') {
+    updateIndicator(PACKETS, null, report.packetsLost)
+   }
+  });
+ });
+}
+
 // End call & cleanup
 function endCall() {
- if (currentCall) {
-  currentCall.close();
-  currentCall = null;
-  showToast('Call disconnected');
- }
- 
  if (localStream) {
   localStream.getTracks().forEach(track => track.stop());
   localStream = null;
@@ -177,4 +240,10 @@ function endCall() {
  
  localVideo.srcObject = null;
  remoteVideo.srcObject = null;
+ 
+ if (currentCall) {
+  currentCall.close();
+  currentCall = null;
+  showToast('Call disconnected');
+ }
 }

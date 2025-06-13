@@ -48,7 +48,7 @@
 
 <body class="flex flex-col min-h-dvh ai-gradient-bg">
 	<!-- Toast Container -->
-	<div id="toastContainer" class="fixed top-4 right-4 space-y-2 z-50"></div>
+	<div id="toastContainer" class="fixed top-4 inset-x-4 flex flex-col items-center gap-2 z-50"></div>
 	
 	<!-- Toast Animation -->
 	<style>
@@ -76,29 +76,57 @@
 	</style>
 	
 	<!-- Header -->
-	<header class="ai-card px-4 py-3 mx-3 mt-3 rounded-2xl flex justify-between items-center gap-4">
+	<header class="ai-card z-10 px-4 py-3 mx-3 mt-3 rounded-2xl flex justify-between items-center gap-4">
 		<div class="flex-shrink-0 flex items-center space-x-2">
 			<div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
 				<i class="ri-ai-generate text-xs text-white"></i>
 			</div>
 			<h1 class="text-base font-medium text-gray-800">Whispr</h1>
 		</div>
-		<span id="my-id" class="truncate text-xs text-gray-600"></span>
+		<!-- <span id="my-id" class="truncate text-xs text-gray-600"></span> -->
+		
+		<div class="relative">
+			<div id="quality" class="peer flex items-center gap-2">
+				<div class="size-3 rounded-full bg-green-400 shadow-sm"></div>
+				<span class="text-gray-800 text-xs font-bold">Good</span>
+			</div>
+			
+			<div class="hidden peer-hover:flex absolute top-6 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex-col justify-around items-start gap-2">
+				<div id="rtt" class="text-nowrap text-gray-800 text-xs font-medium">
+					RTT:
+					<span></span>
+				</div>
+				
+				<div id="bitrate" class="text-nowrap text-gray-800 text-xs font-medium">
+					Bitrate:
+					<span></span>
+				</div>
+				
+				<div id="packets" class="text-nowrap text-gray-800 text-xs font-medium">
+					Packets Lost:
+					<span></span>
+				</div>
+			</div>
+		</div>
 	</header>
 	
 	<!-- Main Content -->
 	<main class="grow h-0 p-3 flex justify-center items-center">
 		<div class="relative h-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-			<video id="remoteVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover bg-gray-300"></video>
-			
-			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl overflow-hidden ai-pip">
+			<video id="remoteVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover"></video>
+
+			<button onclick="toggleFullScreen()" class="absolute top-4 right-4 ai-btn w-10 h-10 bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-2xl shadow-sm">
+				<i class="ri-fullscreen-line"></i>
+			</button>
+
+			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl shadow-sm overflow-hidden ai-pip">
 				<video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
 			</div>
 		</div>
 	</main>
 	
 	<!-- Controls -->
-	<footer class="ai-card px-4 py-3 mx-3 mb-3 rounded-2xl">
+	<footer class="ai-card z-10 px-4 py-3 mx-3 mb-3 rounded-2xl">
 		<div class="flex justify-center space-x-4">
 			<button onclick="toggleMute()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-500 flex items-center justify-center text-white hover:from-cyan-500 hover:to-cyan-600">
 				<i id="micIcon" class="ri-mic-line"></i>
