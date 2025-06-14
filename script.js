@@ -21,18 +21,31 @@ const PACKETS = document.getElementById('packets');
 
 let audioEnabled = true;
 let videoEnabled = true;
+let devices = [];
+let currentDeviceId = '';
+
+async function getAvailableDevices() {
+ devices = await navigator.mediaDevices.enumerateDevices();
+ const videoDevices = devices.filter(device => device.kind === 'videoinput');
+ return videoDevices;
+}
 
 function showToast(message, type = 'info') {
+ const duration = message.split(' ').length * 800;
+ 
  const toast = document.createElement('div');
- toast.className = `flex items-center gap-5 w-fit px-6 py-3 rounded-xl text-white text-sm shadow-lg ${
-    type === 'error' ? 'bg-red-500' : 'bg-gray-800'
-  } animate-fadeInOut`;
- toast.innerHTML = message + `<button class="ai-btn size-8 rounded-lg flex items-center justify-center text-white bg-white/10">
+ toast.className = `flex items-center gap-3 w-fit px-6 py-3 rounded-xl text-white text-sm shadow-lg ${
+   type === 'error' ? 'bg-red-500' : 'bg-gray-800'
+  }`;
+ toast.style.animation = `fadeInOut ${duration - 100}ms ease forwards`;
+ toast.innerHTML = message + `<button class="flex-shrink-0 ai-btn size-8 rounded-lg flex items-center justify-center text-white bg-white/10">
   <i class="ri-close-line"></i>
  </button>`;
  
  toastContainer.appendChild(toast);
- setTimeout(() => toast.remove(), 3000);
+ 
+ console.log(duration);
+ setTimeout(() => toast.remove(), duration);
 }
 
 function updateIndicator(element, classes, text) {
@@ -54,15 +67,23 @@ function toggleFullScreen() {
  }
 }
 
-function shareLink() {
- const url = `${baseUrl}?peer=${peer.id}`;
+function shareLink(type = 'url') {
+ let content;
  
  if (navigator.share) {
-  navigator.share({
-   title: 'Join my Whispr call!',
-   text: 'Click to connect with me:',
-   url: url
-  }).then(() => {
+  if (type === 'url') {
+   content = {
+    title: 'Join my Whispr call!',
+    text: 'Click to connect with me:',
+    url: `${baseUrl}?peer=${peer.id}`
+   }
+  } else {
+   content = {
+    title: 'Join me on Whispr!',
+    text: `My Whispr instance: ${peer.id}`,
+   }
+  }
+  navigator.share(content).then(() => {
    showToast('Link shared successfully!');
   }).catch(err => {
    console.error('Sharing failed:', err);
@@ -87,12 +108,10 @@ function init() {
  }
 }
 
-// PeerJS ID Display
 peer.on('open', id => {
  init();
 });
 
-// Handle incoming call
 peer.on('call', call => {
  getMediaStream().then(stream => {
   localStream = stream;
@@ -121,7 +140,6 @@ peer.on('error', err => {
  showToast('A peer error occurred.', 'error');
 });
 
-// Call a peer
 function callPeer(peerId = 'ask') {
  const remoteId = peerId === 'ask' ? prompt('Enter peer ID to call:') : peerId;
  if (!remoteId) {
@@ -140,7 +158,6 @@ function callPeer(peerId = 'ask') {
  });
 }
 
-// Setup call events
 function setupCallEvents(call) {
  if (currentCall) currentCall.close();
  currentCall = call;
@@ -170,7 +187,6 @@ function setupCallEvents(call) {
  if (connCheckupInterval) clearInterval(connCheckupInterval);
  connCheckupInterval = setInterval(updateConnectionQuality, 2000);
  
- // Monitor ICE connection state
  rtcObject.oniceconnectionstatechange = () => {
   if (rtcObject.iceConnectionState === 'disconnected' ||
    rtcObject.iceConnectionState === 'failed') {
@@ -180,10 +196,66 @@ function setupCallEvents(call) {
  };
 }
 
-// Get User Media
-function getMediaStream() {
- return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+async function getMediaStream() {
+ const stream = await navigator.mediaDevices.getUserMedia({
+  video: { facingMode: 'user' }, // Start with front camera
+  audio: true
+ });
+ currentDeviceId = stream.getVideoTracks()[0].getSettings().deviceId;
+ return stream;
 }
+
+async function switchCamera() {
+ if (!localStream) {
+  showToast('No active stream to switch');
+  return;
+ }
+ 
+ const videoDevices = await getAvailableDevices();
+ 
+ if (videoDevices.length < 2) {
+  showToast('No second camera found', 'error');
+  return;
+ }
+ 
+ const currentTrack = localStream.getVideoTracks()[0];
+ const currentDeviceId = currentTrack.getSettings().deviceId;
+ 
+ let newDeviceId;
+ if (!currentDeviceId) {
+  newDeviceId = videoDevices[1].deviceId;
+ } else {
+  const currentIndex = videoDevices.findIndex(device => device.deviceId === currentDeviceId);
+  newDeviceId = videoDevices[(currentIndex + 1) % videoDevices.length].deviceId;
+ }
+ 
+ try {
+  const newStream = await navigator.mediaDevices.getUserMedia({
+   video: { deviceId: { exact: newDeviceId } },
+   audio: false
+  });
+  
+  const newVideoTrack = newStream.getVideoTracks()[0];
+  const sender = currentCall.peerConnection.getSenders()
+   .find(s => s.track.kind === 'video');
+  
+  if (sender) {
+   await sender.replaceTrack(newVideoTrack);
+  }
+  
+  localStream.getVideoTracks().forEach(track => track.stop());
+  localStream.removeTrack(localStream.getVideoTracks()[0]);
+  localStream.addTrack(newVideoTrack);
+  localVideo.srcObject = localStream;
+  
+  showToast('Camera switched');
+ } catch (err) {
+  console.error('Error switching camera:', err);
+  showToast('Failed to switch camera', 'error');
+ }
+}
+
+
 
 // Mute/Unmute mic
 function toggleMute() {
@@ -208,64 +280,6 @@ function toggleVideo() {
  videoIcon.className = videoEnabled ? 'ri-camera-line' : 'ri-camera-off-line';
  showToast(videoEnabled ? 'Camera on' : 'Camera off');
 }
-
-
-
-
-// Global variables you likely already have
-// let localStream;
-// let currentCall;
-
-// Add this simple switch function
-async function switchCamera() {
- if (!localStream) {
-  showToast('You are not in a call.');
-  return
- };
- 
- try {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const videoDevices = devices.filter(d => d.kind === 'videoinput');
-  
-  if (videoDevices.length < 2) {
-   showToast('No other cameras found', 'error');
-   return;
-  }
-  
-  const currentDeviceId = localStream.getVideoTracks()[0].getSettings().deviceId;
-  
-  const currentIndex = videoDevices.findIndex(d => d.deviceId === currentDeviceId);
-  const nextIndex = (currentIndex + 1) % videoDevices.length;
-  const nextDevice = videoDevices[nextIndex];
-  
-  const newStream = await navigator.mediaDevices.getUserMedia({
-   video: { deviceId: { exact: nextDevice.deviceId } },
-   audio: true
-  });
-  
-  if (currentCall) {
-   const videoSender = rtcObject
-    .getSenders()
-    .find(s => s.track && s.track.kind === 'video');
-   
-   if (videoSender) {
-    await videoSender.replaceTrack(newStream.getVideoTracks()[0]);
-   }
-  }
-  
-  localStream.getTracks().forEach(track => track.stop());
-  localStream = newStream;
-  localVideo.srcObject = localStream;
-  
-  console.log('Switched to camera:', nextDevice.label || 'Camera ' + (nextIndex + 1));
-  showToast(`Switched to camera: ${nextDevice.label || 'Camera ' + (nextIndex + 1)}`);
- } catch (err) {
-  console.error('Camera switch failed:', err);
-  showToast('Camera switch failed', 'error');
- }
-}
-
-
 
 function updateConnectionQuality() {
  rtcObject.getStats(null).then(stats => {
@@ -344,3 +358,5 @@ toastContainer.addEventListener('click', (e) => {
   e.target.closest('div').remove();
  }
 });
+
+setTimeout(() => showToast('Warning: This service is under development. Please avoid long sessions and use it responsibly!', 'error'), 1000);

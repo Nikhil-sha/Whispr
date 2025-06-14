@@ -55,23 +55,19 @@
 		@keyframes fadeInOut {
 			0% {
 				opacity: 0;
-				transform: translateY(-10px);
+				transform: translateX(-15%);
 			}
 			
 			10%,
 			90% {
 				opacity: 1;
-				transform: translateY(0);
+				transform: translateX(0);
 			}
 			
 			100% {
 				opacity: 0;
-				transform: translateY(-10px);
+				transform: translateX(15%);
 			}
-		}
-		
-		.animate-fadeInOut {
-			animation: fadeInOut 3s ease forwards;
 		}
 	</style>
 	
@@ -90,7 +86,7 @@
 				<span class="text-xs font-bold">Excellent</span>
 			</summary>
 			
-			<div class="absolute top-8 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex flex-col justify-around items-start gap-2">
+			<div class="absolute top-8 right-0 z-50 h-fit ai-card rounded-2xl p-3 flex flex-col justify-around items-start gap-2">
 				<div id="rtt" class="text-nowrap text-xs font-medium">
 					RTT:
 					<span></span>
@@ -147,9 +143,12 @@
 					<i class="ri-share-line"></i>
 				</summary>
 				
-				<div class="absolute bottom-14 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex flex-col justify-around items-start gap-2 hover:from-yellow-500 hover:to-yellow-600">
-					<button onclick="shareLink()" class="w-full rounded-2xl flex items-center justify-center hover:from-yellow-500">
-						<i class="ri-share-line"></i>
+				<div class="absolute bottom-14 right-0 z-50 h-fit ai-card rounded-2xl p-3 flex flex-col justify-around items-start gap-2 hover:from-yellow-500 hover:to-yellow-600">
+					<button onclick="shareLink('id')" class="text-nowrap text-sm rounded-2xl group">
+						<i class="ri-share-line mr-2 group-hover:text-blue-500"></i>Share Id
+					</button>
+					<button onclick="shareLink()" class="text-nowrap text-sm rounded-2xl group">
+						<i class="ri-links-line mr-2 group-hover:text-blue-500"></i>Share Link
 					</button>
 				</div>
 			</details>
