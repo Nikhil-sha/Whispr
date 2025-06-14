@@ -8,7 +8,9 @@ let connCheckupInterval = null;
 let rtcObject = null;
 
 // DOM Elements
+const canvas = document.getElementById('canvas');
 const localVideo = document.getElementById('localVideo');
+const remoteAudio = document.getElementById('remoteAudio');
 const remoteVideo = document.getElementById('remoteVideo');
 const micIcon = document.getElementById('micIcon');
 const videoIcon = document.getElementById('videoIcon');
@@ -19,13 +21,6 @@ const PACKETS = document.getElementById('packets');
 
 let audioEnabled = true;
 let videoEnabled = true;
-
-// Add this once when initializing your app
-toastContainer.addEventListener('click', (e) => {
- if (e.target.closest('.ai-btn')) {
-  e.target.closest('div').remove();
- }
-});
 
 function showToast(message, type = 'info') {
  const toast = document.createElement('div');
@@ -52,8 +47,8 @@ function updateIndicator(element, classes, text) {
 }
 
 function toggleFullScreen() {
- if (currentCall && !document.fullscreenElement) {
-  remoteVideo.requestFullscreen();
+ if (!document.fullscreenElement) {
+  canvas.requestFullscreen();
  } else {
   document.exitFullscreen?.();
  }
@@ -151,7 +146,14 @@ function setupCallEvents(call) {
  currentCall = call;
  
  call.on('stream', remoteStream => {
-  remoteVideo.srcObject = remoteStream;
+  const videoTrack = remoteStream.getVideoTracks()[0];
+  const videoStream = new MediaStream([videoTrack]);
+  
+  const audioTrack = remoteStream.getAudioTracks()[0];
+  const audioStream = new MediaStream([audioTrack]);
+  
+  remoteVideo.srcObject = videoStream;
+  remoteAudio.srcObject = audioStream;
  });
  
  call.on('close', () => {
@@ -167,6 +169,15 @@ function setupCallEvents(call) {
  rtcObject = call.peerConnection;
  if (connCheckupInterval) clearInterval(connCheckupInterval);
  connCheckupInterval = setInterval(updateConnectionQuality, 2000);
+ 
+ // Monitor ICE connection state
+ rtcObject.oniceconnectionstatechange = () => {
+  if (rtcObject.iceConnectionState === 'disconnected' ||
+   rtcObject.iceConnectionState === 'failed') {
+   endCall();
+   showToast('Connection lost with peer.');
+  }
+ };
 }
 
 // Get User Media
@@ -240,6 +251,11 @@ function updateConnectionQuality() {
 
 // End call & cleanup
 function endCall() {
+ if (connCheckupInterval) {
+  clearInterval(connCheckupInterval);
+  connCheckupInterval = null;
+ }
+ 
  if (localStream) {
   localStream.getTracks().forEach(track => track.stop());
   localStream = null;
@@ -247,10 +263,26 @@ function endCall() {
  
  localVideo.srcObject = null;
  remoteVideo.srcObject = null;
+ remoteAudio.srcObject = null;
  
  if (currentCall) {
-  currentCall.close();
+  try {
+   currentCall.close();
+  } catch (e) {
+   console.warn('Error while closing call:', e);
+  }
   currentCall = null;
-  showToast('Call disconnected');
  }
+ 
+ lastBytesSent = 0;
+ lastTimestamp = 0;
+ rtcObject = null;
+ 
+ showToast('Call ended');
 }
+
+toastContainer.addEventListener('click', (e) => {
+ if (e.target.closest('.ai-btn')) {
+  e.target.closest('div').remove();
+ }
+});

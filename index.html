@@ -90,7 +90,7 @@
 				<span class="text-gray-800 text-xs font-bold">Excellent</span>
 			</summary>
 			
-			<div class="absolute top-6 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex flex-col justify-around items-start gap-2">
+			<div class="absolute top-8 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex flex-col justify-around items-start gap-2">
 				<div id="rtt" class="text-nowrap text-gray-800 text-xs font-medium">
 					RTT:
 					<span></span>
@@ -111,16 +111,16 @@
 	
 	<!-- Main Content -->
 	<main class="grow h-0 p-3 flex justify-center items-center">
-		<div class="relative h-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-			<video id="remoteVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover"></video>
-			
-			<button onclick="toggleFullScreen()" class="absolute top-4 right-4 ai-btn w-10 h-10 bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-2xl shadow-sm">
-				<i class="ri-fullscreen-line"></i>
-			</button>
+		<div id="canvas" class="relative h-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+			<video id="remoteVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
 			
 			<div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-2xl shadow-sm overflow-hidden ai-pip">
 				<video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
 			</div>
+			
+			<button onclick="toggleFullScreen()" class="absolute top-4 right-4 ai-btn w-10 h-10 bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20 rounded-2xl shadow-sm">
+				<i class="ri-fullscreen-line"></i>
+			</button>
 		</div>
 	</main>
 	
@@ -139,11 +139,21 @@
 			<button onclick="endCall()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white hover:from-red-500 hover:to-red-600">
 				<i class="ri-user-unfollow-line"></i>
 			</button>
-			<button onclick="shareLink()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-white hover:from-yellow-500 hover:to-yellow-600">
-				<i class="ri-share-line"></i>
-			</button>
+			<details class="relative marker:content-none">
+				<summary class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-white">
+					<i class="ri-share-line"></i>
+				</summary>
+				
+				<div class="absolute bottom-14 right-0 z-50 h-fit ai-card rounded-2xl p-2 flex flex-col justify-around items-start gap-2">
+					<button onclick="shareLink()" class="ai-btn w-10 h-10 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-white hover:from-yellow-500 hover:to-yellow-600">
+						<i class="ri-share-line"></i>
+					</button>
+				</div>
+			</details>
 		</div>
 	</footer>
+	
+	<audio id="remoteAudio" autoplay></audio>
 	
 	<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 	<script src="./script.js"></script>
