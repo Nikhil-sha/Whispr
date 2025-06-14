@@ -209,6 +209,64 @@ function toggleVideo() {
  showToast(videoEnabled ? 'Camera on' : 'Camera off');
 }
 
+
+
+
+// Global variables you likely already have
+// let localStream;
+// let currentCall;
+
+// Add this simple switch function
+async function switchCamera() {
+ if (!localStream) {
+  showToast('You are not in a call.');
+  return
+ };
+ 
+ try {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videoDevices = devices.filter(d => d.kind === 'videoinput');
+  
+  if (videoDevices.length < 2) {
+   showToast('No other cameras found', 'error');
+   return;
+  }
+  
+  const currentDeviceId = localStream.getVideoTracks()[0].getSettings().deviceId;
+  
+  const currentIndex = videoDevices.findIndex(d => d.deviceId === currentDeviceId);
+  const nextIndex = (currentIndex + 1) % videoDevices.length;
+  const nextDevice = videoDevices[nextIndex];
+  
+  const newStream = await navigator.mediaDevices.getUserMedia({
+   video: { deviceId: { exact: nextDevice.deviceId } },
+   audio: true
+  });
+  
+  if (currentCall) {
+   const videoSender = rtcObject
+    .getSenders()
+    .find(s => s.track && s.track.kind === 'video');
+   
+   if (videoSender) {
+    await videoSender.replaceTrack(newStream.getVideoTracks()[0]);
+   }
+  }
+  
+  localStream.getTracks().forEach(track => track.stop());
+  localStream = newStream;
+  localVideo.srcObject = localStream;
+  
+  console.log('Switched to camera:', nextDevice.label || 'Camera ' + (nextIndex + 1));
+  showToast(`Switched to camera: ${nextDevice.label || 'Camera ' + (nextIndex + 1)}`);
+ } catch (err) {
+  console.error('Camera switch failed:', err);
+  showToast('Camera switch failed', 'error');
+ }
+}
+
+
+
 function updateConnectionQuality() {
  rtcObject.getStats(null).then(stats => {
   stats.forEach(report => {
