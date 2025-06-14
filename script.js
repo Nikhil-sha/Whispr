@@ -55,7 +55,7 @@ function toggleFullScreen() {
 }
 
 function shareLink() {
- const url = `https://nikhil-sha.github.io/Whispr/?peer=${peer.id}`;
+ const url = `${baseUrl}?peer=${peer.id}`;
  
  if (navigator.share) {
   navigator.share({
