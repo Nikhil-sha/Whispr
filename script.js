@@ -21,14 +21,7 @@ const PACKETS = document.getElementById('packets');
 
 let audioEnabled = true;
 let videoEnabled = true;
-let devices = [];
-let currentDeviceId = '';
-
-async function getAvailableDevices() {
- devices = await navigator.mediaDevices.enumerateDevices();
- const videoDevices = devices.filter(device => device.kind === 'videoinput');
- return videoDevices;
-}
+let prefFacingMode = 'user';
 
 function showToast(message, type = 'info') {
  const duration = message.split(' ').length * 800;
@@ -65,6 +58,11 @@ function toggleFullScreen() {
  } else {
   document.exitFullscreen?.();
  }
+}
+
+function toggleFacing() {
+ prefFacingMode = prefFacingMode === 'user' ? 'environment' : 'user';
+ showToast(`Camera Switched (${prefFacingMode === 'user' ? 'Back' : 'Front'}). Reconnection needed to apply changes.`);
 }
 
 function shareLink(type = 'url') {
@@ -113,7 +111,7 @@ peer.on('open', id => {
 });
 
 peer.on('call', call => {
- getMediaStream().then(stream => {
+ getMediaStream(prefFacingMode).then(stream => {
   localStream = stream;
   localVideo.srcObject = stream;
   
@@ -147,7 +145,7 @@ function callPeer(peerId = 'ask') {
   return;
  };
  
- getMediaStream().then(stream => {
+ getMediaStream(prefFacingMode).then(stream => {
   localStream = stream;
   localVideo.srcObject = stream;
   
@@ -196,65 +194,42 @@ function setupCallEvents(call) {
  };
 }
 
-async function getMediaStream() {
- const stream = await navigator.mediaDevices.getUserMedia({
-  video: true, // Start with front camera
-  audio: true
- });
- currentDeviceId = stream.getVideoTracks()[0].getSettings().deviceId;
- return stream;
-}
-
-async function switchCamera() {
- if (!localStream) {
-  showToast('No active stream to switch');
-  return;
- }
- 
- const videoDevices = await getAvailableDevices();
- 
- if (videoDevices.length < 2) {
-  showToast('No second camera found', 'error');
-  return;
- }
- 
- const currentTrack = localStream.getVideoTracks()[0];
- const currentDeviceId = currentTrack.getSettings().deviceId;
- 
- let newDeviceId;
- if (!currentDeviceId) {
-  newDeviceId = videoDevices[1].deviceId;
- } else {
-  const currentIndex = videoDevices.findIndex(device => device.deviceId === currentDeviceId);
-  newDeviceId = videoDevices[(currentIndex + 1) % videoDevices.length].deviceId;
- }
- 
+async function getMediaStream(facingMode) {
  try {
-  const newStream = await navigator.mediaDevices.getUserMedia({
-   video: { deviceId: { exact: newDeviceId } },
+  // First try with facingMode
+  const stream = await navigator.mediaDevices.getUserMedia({
+   video: { facingMode },
+   audio: true
   });
+  return stream;
+ } catch (error) {
+  showToast(`Couldn't get camera by facingMode (${facingMode}), trying device enumeration`, 'error');
   
-  const newVideoTrack = newStream.getVideoTracks()[0];
-  const sender = rtcObject.getSenders()
-   .find(s => s.track.kind === 'video');
+  // Fallback to device enumeration
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videoDevices = devices.filter(d => d.kind === 'videoinput');
   
-  if (sender) {
-   await sender.replaceTrack(newVideoTrack);
+  for (const device of videoDevices) {
+   try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+     video: { deviceId: { exact: device.deviceId } },
+     audio: true
+    });
+    const track = stream.getVideoTracks()[0];
+    const settings = track.getSettings();
+    
+    if (!facingMode || settings.facingMode === facingMode) {
+     return stream;
+    }
+    track.stop();
+   } catch (e) {
+    continue;
+   }
   }
   
-  localStream.getVideoTracks().forEach(track => track.stop());
-  localStream.removeTrack(localStream.getVideoTracks()[0]);
-  localStream.addTrack(newVideoTrack);
-  localVideo.srcObject = localStream;
-  
-  showToast('Camera switched');
- } catch (err) {
-  console.error('Error switching camera:', err);
-  showToast('Failed to switch camera', 'error');
+  showToast("No suitable camera found", 'error');
  }
 }
-
-
 
 // Mute/Unmute mic
 function toggleMute() {
