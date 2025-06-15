@@ -37,7 +37,6 @@ function showToast(message, type = 'info') {
  
  toastContainer.appendChild(toast);
  
- console.log(duration);
  setTimeout(() => toast.remove(), duration);
 }
 
@@ -61,8 +60,8 @@ function toggleFullScreen() {
 }
 
 function toggleFacing() {
- prefFacingMode = prefFacingMode === 'user' ? 'environment' : 'user';
  showToast(`Camera Switched (${prefFacingMode === 'user' ? 'Back' : 'Front'}). Reconnection needed to apply changes.`);
+ prefFacingMode = prefFacingMode === 'user' ? 'environment' : 'user';
 }
 
 function shareLink(type = 'url') {
