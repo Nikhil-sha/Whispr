@@ -59,7 +59,7 @@ function toggleFullScreen() {
  }
 }
 
-function toggleFacing() {
+function switchFacing() {
  showToast(`Camera Switched (${prefFacingMode === 'user' ? 'Back' : 'Front'}). Reconnection needed to apply changes.`);
  prefFacingMode = prefFacingMode === 'user' ? 'environment' : 'user';
 }
