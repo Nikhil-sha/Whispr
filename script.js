@@ -358,4 +358,4 @@ toastContainer.addEventListener('click', (e) => {
  }
 });
 
-setTimeout(() => showToast('Warning: This service is under development. Please avoid long sessions and use it responsibly!', 'error'), 1000);
+setTimeout(() => showToast('Warning: This service is under development, some features may break. Please avoid long sessions and use it responsibly!', 'error'), 1000);
