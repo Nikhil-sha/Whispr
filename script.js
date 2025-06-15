@@ -198,7 +198,7 @@ function setupCallEvents(call) {
 
 async function getMediaStream() {
  const stream = await navigator.mediaDevices.getUserMedia({
-  video: { facingMode: 'user' }, // Start with front camera
+  video: true, // Start with front camera
   audio: true
  });
  currentDeviceId = stream.getVideoTracks()[0].getSettings().deviceId;
@@ -232,11 +232,10 @@ async function switchCamera() {
  try {
   const newStream = await navigator.mediaDevices.getUserMedia({
    video: { deviceId: { exact: newDeviceId } },
-   audio: false
   });
   
   const newVideoTrack = newStream.getVideoTracks()[0];
-  const sender = currentCall.peerConnection.getSenders()
+  const sender = rtcObject.getSenders()
    .find(s => s.track.kind === 'video');
   
   if (sender) {
