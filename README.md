@@ -1,5 +1,5 @@
 # Whispr
 
-this is in development phase.
+this app is in development phase.
 
 `current: refactoring...`
