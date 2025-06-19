@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" class="box-border">
+
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <meta name="description" content="Whispr - A simple video chat application">
+ <title>Whispr - Video Chat</title>
+ <script src="https://cdn.tailwindcss.com"></script>
+ <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+ <style>
+  @keyframes subtle-pulse {
+   
+   0%,
+   100% {
+    opacity: 0.95;
+   }
+   
+   50% {
+    opacity: 1;
+   }
+  }
+  
+  @keyframes fadeInOut {
+   0% {
+    opacity: 0;
+    transform: translateX(-15%);
+   }
+   
+   10%,
+   90% {
+    opacity: 1;
+    transform: translateX(0);
+   }
+   
+   100% {
+    opacity: 0;
+    transform: translateX(15%);
+   }
+  }
+  
+  /* Focus styles for accessibility */
+  /* button:focus-visible,
+  input:focus-visible,
+  summary:focus-visible {
+   outline: 2px solid #3b82f6;
+   outline-offset: 2px;
+  } */
+  
+  /* Reduced motion alternatives */
+  @media (prefers-reduced-motion: reduce) {
+   * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+   }
+  }
+ </style>
+</head>
+
+<body class="relative flex flex-col gap-5 min-h-dvh p-4 md:p-8 lg:p-12 bg-blue-50">
+ <!-- Toast Container -->
+ <div id="toast-container" aria-live="polite" aria-atomic="true" class="fixed top-4 inset-x-4 flex flex-col items-center gap-2 z-50">
+ </div>
+ 
+ <!-- Header -->
+ <header class="bg-white px-4 py-3 rounded-3xl flex justify-between items-center gap-4 shadow-sm">
+  <div class="flex-shrink-0 flex items-center space-x-2">
+   <div class="w-6 h-6 rounded-3xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+    <i class="ri-ai-generate text-xs text-white" aria-hidden="true"></i>
+   </div>
+   <h1 class="text-base font-medium">Whispr</h1>
+  </div>
+  
+  <div class="flex items-center gap-3">
+   <details class="relative marker:content-none">
+    <summary id="ind-quality" class="flex items-center gap-2 p-2 rounded-3xl hover:bg-gray-100 active:scale-90 cursor-pointer transition-colors" aria-label="Connection quality information" aria-expanded="false">
+     <div class="size-3 rounded-3xl bg-green-400"></div>
+     <span class="text-xs font-bold">Idle</span>
+    </summary>
+    <div class="absolute top-8 right-0 z-50 bg-white shadow-md rounded-3xl p-3 flex flex-col gap-2">
+     <p id="ind-rtt" class="text-xs font-medium whitespace-nowrap">RTT: <span>null</span></p>
+     <p id="ind-bitrate" class="text-xs font-medium whitespace-nowrap">Bitrate: <span>null</span></p>
+     <p id="ind-packets" class="text-xs font-medium whitespace-nowrap">Packets Lost: <span>null</span></p>
+     <p id="ind-camera" class="text-xs font-medium whitespace-nowrap">Camera InUse: <span>Front</span></p>
+    </div>
+   </details>
+   
+   <button id="btn-profile" class="transition-all duration-300 px-3 py-2 rounded-3xl bg-gray-100 hover:bg-gray-200 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100" aria-label="Go to profile page">
+    <i class="ri-user-line" aria-hidden="true"></i>
+   </button>
+  </div>
+ </header>
+ 
+ <main class="grow h-0 p-5 overflow-auto flex justify-center items-center bg-white rounded-3xl shadow-sm">
+  <section id="welcome-section" class="max-h-full bg-white max-w-md w-full">
+   <div class="text-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-800 mb-1">Start a Connection</h2>
+    <p class="text-sm text-gray-500">Enter a peer ID or share yours below</p>
+   </div>
+   
+   <form class="w-full space-y-4 mb-8">
+    <div class="relative">
+     <input type="text" name="peer" placeholder="Enter peer ID" class="w-full px-4 py-3 rounded-3xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all" aria-label="Peer connection ID" required>
+     <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 transition-all duration-300 px-3 py-2 rounded-3xl bg-gray-100 hover:bg-gray-200 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100" aria-label="Connect">
+      <i class="ri-arrow-right-line"></i>
+     </button>
+    </div>
+    
+    <div class="flex items-center gap-3">
+     <span class="flex-grow h-px bg-gray-200"></span>
+     <span class="text-xs text-gray-400">OR</span>
+     <span class="flex-grow h-px bg-gray-200"></span>
+    </div>
+    
+    <div class="flex flex-col gap-2">
+     <button type="button" id="btn-share-id" class="flex items-center justify-center gap-2 px-4 py-3 rounded-3xl bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-medium">
+      <i class="ri-file-copy-line"></i>
+      Copy Your ID
+     </button>
+     <button type="button" id="btn-share-url" class="flex items-center justify-center gap-2 px-4 py-3 rounded-3xl bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-medium">
+      <i class="ri-share-line"></i>
+      Share Connection Link
+     </button>
+    </div>
+   </form>
+   
+   <div class="w-full">
+    <h3 class="text-xs font-bold text-gray-400 mb-3">CONNECTION HISTORY</h3>
+    <ol class="relative border-s border-gray-200">
+     <!-- Timeline Item -->
+     <li class="mb-3 ms-4">
+      <div class="absolute w-3 h-3 bg-blue-500 rounded-full mt-5 -start-1.5"></div>
+      <button class="p-2 rounded-3xl hover:bg-gray-50 w-full text-left">
+       <p class="text-sm font-medium">ad571441</p>
+       <p class="text-xs text-gray-500">Connected 2 hours ago</p>
+      </button>
+     </li>
+     
+     <!-- Timeline Item -->
+     <li class="mb-3 ms-4">
+      <div class="absolute w-3 h-3 bg-gray-300 rounded-full mt-5 -start-1.5"></div>
+      <button class="p-2 rounded-3xl hover:bg-gray-50 w-full text-left">
+       <p class="text-sm font-medium">bc82f9a2-aa1b-4a50</p>
+       <p class="text-xs text-gray-500">Yesterday, 4:20 PM</p>
+      </button>
+     </li>
+    </ol>
+   </div>
+  </section>
+  
+  <section id="video-section" class="hidden relative h-full aspect-[9/16] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg">
+   <video id="video-remote" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover" aria-label="Remote video stream"></video>
+   <div class="absolute bottom-4 right-4 w-1/4 aspect-[9/16] rounded-3xl overflow-hidden border-2 border-white/30 shadow-md">
+    <video id="video-local" autoplay playsinline muted class="w-full h-full object-cover" aria-label="Local video stream"></video>
+   </div>
+   <button id="btn-toggle-fullscreen" class="transition-transform duration-300 absolute top-4 right-4 px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl active:scale-90" aria-label="Toggle fullscreen">
+    <i class="ri-fullscreen-line" aria-hidden="true"></i>
+   </button>
+  </section>
+  
+  <section class="hidden bg-white max-w-md w-full">
+   <header class="flex items-center gap-3 mb-4">
+    <div class="relative">
+     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center overflow-hidden">
+      <!-- Profile image or placeholder -->
+      <i class="ri-user-3-line text-xl text-white" aria-hidden="true"></i>
+      <button id="btn-change-avatar" class="absolute inset-0 w-full h-full bg-black/30 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center" aria-label="Change profile picture">
+       <i class="ri-camera-line text-white" aria-hidden="true"></i>
+      </button>
+     </div>
+    </div>
+    <div>
+     <h2 class="font-bold text-lg">Profile Settings</h2>
+     <p class="text-xs text-gray-500">Edit your information</p>
+    </div>
+   </header>
+   
+   <form id="profile-form" class="space-y-3">
+    <div class="space-y-1">
+     <label for="profile-name" class="text-xs font-medium text-gray-500">Display Name</label>
+     <input type="text" id="profile-name" value="Alex Johnson" class="w-full px-3 py-2 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all">
+    </div>
+    
+    <div class="space-y-1">
+     <label for="profile-status" class="text-xs font-medium text-gray-500">Status</label>
+     <input type="text" id="profile-status" value="Available" class="w-full px-3 py-2 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all">
+    </div>
+    
+    <div class="space-y-1">
+     <label for="profile-id" class="text-xs font-medium text-gray-500">Your Whispr ID</label>
+     <div class="relative">
+      <input type="text" id="profile-id" value="ad571441" readonly class="w-full px-3 py-2 rounded-2xl border border-gray-200 bg-gray-50 pr-8">
+      <button type="button" id="btn-copy-id" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-xl hover:bg-gray-100 transition-colors" aria-label="Copy ID to clipboard">
+       <i class="ri-file-copy-line text-gray-400" aria-hidden="true"></i>
+      </button>
+     </div>
+    </div>
+    
+    <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+     <button type="button" id="btn-delete-profile" class="px-4 py-2 rounded-2xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors active:scale-95" aria-label="Delete profile">
+      <i class="ri-delete-bin-line mr-1" aria-hidden="true"></i> Delete
+     </button>
+     <button type="submit" id="btn-save-profile" class="px-4 py-2 rounded-2xl text-sm font-medium bg-gradient-to-br from-cyan-400 to-cyan-500 text-white hover:from-cyan-500 hover:to-cyan-600 transition-all active:scale-95" aria-label="Save changes">
+      <i class="ri-save-line mr-1" aria-hidden="true"></i> Save
+     </button>
+    </div>
+   </form>
+  </section>
+ </main>
+ 
+ <footer class="bg-white px-4 py-3 rounded-3xl shadow-sm">
+  <nav aria-label="Call controls">
+   <div class="flex justify-center space-x-4">
+    <button id="btn-mute" class="transition-all duration-300 px-3 py-2 rounded-3xl bg-gray-100 hover:bg-gray-200 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100" disabled aria-label="Toggle microphone">
+     <i class="ri-mic-line" aria-hidden="true"></i>
+    </button>
+    <button id="btn-mask" class="transition-all duration-300 px-3 py-2 rounded-3xl bg-gray-100 hover:bg-gray-200 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100" disabled aria-label="Toggle camera">
+     <i class="ri-camera-line" aria-hidden="true"></i>
+    </button>
+    <button id="btn-switch-facing" class="transition-all duration-300  px-3 py-2 rounded-3xl bg-gray-100 hover:bg-gray-200 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100" aria-label="Switch camera">
+     <i class="ri-camera-switch-line" aria-hidden="true"></i>
+    </button>
+    <button id="btn-end-call" class="transition-all duration-300  px-3 py-2 rounded-3xl bg-gradient-to-br from-red-400 to-red-500 text-white hover:from-red-500 hover:to-red-600 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100" disabled aria-label="End call">
+     <i class="ri-user-unfollow-line" aria-hidden="true"></i>
+    </button>
+    
+    <details class="relative marker:content-none">
+     <summary class="transition-all duration-300 px-3 py-2 rounded-3xl bg-gray-100 hover:bg-gray-200 cursor-pointer active:scale-90" aria-label="More options">
+      <i class="ri-more-2-line" aria-hidden="true"></i>
+     </summary>
+     <div class="absolute bottom-14 right-0 z-50 bg-white shadow-md rounded-3xl p-3 flex flex-col gap-2">
+      <button id="btn-share-id" class="text-nowrap text-sm rounded-3xl group active:scale-90 px-3 py-1 hover:bg-gray-100" aria-label="Share connection ID">
+       <i class="ri-share-line mr-2 group-hover:text-blue-500" aria-hidden="true"></i>Share ID
+      </button>
+      <button id="btn-share-url" class="text-nowrap text-sm rounded-3xl group active:scale-90 px-3 py-1 hover:bg-gray-100" aria-label="Share connection URL">
+       <i class="ri-links-line mr-2 group-hover:text-blue-500" aria-hidden="true"></i>Share Link
+      </button>
+     </div>
+    </details>
+   </div>
+  </nav>
+ </footer>
+ 
+ <audio id="audio-remote" autoplay aria-label="Remote audio"></audio>
+ <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+ <script src="./deprecated.js"></script>
+</body>
+
+</html>
