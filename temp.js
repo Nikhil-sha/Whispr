@@ -1242,6 +1242,7 @@ function main() {
  window.addEventListener('hashchange', resolveRouter, { signal });
  
  // Initialize app
+ setInCallInteractions(false);
  setupPeerEventListeners();
  initProfileForm();
  resolveRouter();
