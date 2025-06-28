@@ -1043,6 +1043,8 @@ function cleanupCallResources() {
  rtcObject = null;
  
  setInCallInteractions(false);
+ createToast('success', 'Call ended', 'The call has been disconnected');
+ resolveRouter('home');
 }
 
 function endCall() {
@@ -1051,8 +1053,6 @@ function endCall() {
   "Are you sure you want to end the current call?",
   () => {
    cleanupCallResources();
-   createToast('success', 'Call ended', 'The call has been disconnected');
-   resolveRouter('home');
   }
  );
 }
@@ -1068,11 +1068,12 @@ function toggleMute() {
  createToast('success',
   audioEnabled ? 'Microphone on' : 'Microphone off',
   audioEnabled ? 'Microphone enabled' : 'Microphone disabled');
+ this.querySelector('i').className = `fas ${audioEnabled ? 'fa-microphone' : 'fa-microphone-slash'} text-base`;
 }
 
 function toggleMask() {
  if (!localStream) {
-  createToast('error', 'No active call', 'You are not in a call');
+  createToast('error', 'No active call!', 'You are not in a call');
   return;
  }
  
@@ -1081,6 +1082,7 @@ function toggleMask() {
  createToast('success',
   videoEnabled ? 'Camera on' : 'Camera off',
   videoEnabled ? 'Camera enabled' : 'Camera disabled');
+ this.querySelector('i').className = `fas ${videoEnabled ? 'fa-video' : 'fa-video-slash'} text-base`;
 }
 
 function setupCallEvents(call) {
@@ -1095,10 +1097,10 @@ function setupCallEvents(call) {
   remoteAudio.srcObject = audioStream;
  });
  
- call.on('close', endCall);
+ call.on('close', cleanupCallResources);
  call.on('error', () => {
   createToast('error', 'Call error', 'An error occurred');
-  endCall();
+  cleanupCallResources();
  });
  
  // Setup connection monitoring
@@ -1108,7 +1110,7 @@ function setupCallEvents(call) {
  connCheckupInterval = setInterval(() => {
   if (rtcObject && ['disconnected', 'failed'].includes(rtcObject.iceConnectionState)) {
    createToast('error', 'Connection lost', 'Peer disconnected');
-   endCall();
+   cleanupCallResources();
   }
  }, 5000);
  
@@ -1159,7 +1161,7 @@ function setupPeerEventListeners() {
  
  peer.on('close', () => {
   createToast('error', 'Signed out', 'Refresh to create new session');
-  endCall();
+  cleanupCallResources();
  });
  
  peer.on('error', err => {
