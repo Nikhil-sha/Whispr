@@ -180,15 +180,6 @@
 			<div class="px-2 py-3 border-t border-surface-100/50 dark:border-surface-700/50">
 				<h3 class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-2 ml-2.5">Recent Calls</h3>
 				<div id="peer-list" class="space-y-2">
-					<div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors duration-150">
-						<div class="w-8 h-8 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
-							<i class="fas fa-user text-surface-600 dark:text-surface-300 text-xs"></i>
-						</div>
-						<div class="flex-1 inline-flex flex-col min-w-0">
-							<p class="text-sm leading-tight font-medium text-surface-900 dark:text-surface-100 truncate">Sarah Miller</p>
-							<span class="text-xs leading-tight text-surface-500 dark:text-surface-400">Yesterday, 3:42 PM</span>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>
@@ -258,11 +249,11 @@
 				<article id="call" class="hidden w-full h-full flex items-center justify-center">
 					<div class="w-full max-w-xl h-full md:aspect-[9/16] flex items-center justify-center bg-surface-900 rounded-2xl overflow-hidden relative border border-surface-900/10 dark:border-surface-800/50">
 						<!-- Remote Video -->
-						<video id="call-video-remote" class="w-full h-full object-cover" autoplay muted playsinline></video>
+						<video id="call-video-remote" class="w-full h-full object-cover" muted autoplay playsinline></video>
 						
 						<!-- Local Video PIP -->
 						<div class="absolute bottom-5 right-5 w-[5.4rem] h-[9.6rem] rounded-lg overflow-hidden shadow-hard dark:shadow-dark-hard border-2 border-surface-0/20 dark:border-surface-800/30 bg-surface-800">
-							<video id="call-video-local" class="w-full h-full object-cover" autoplay muted playsinline></video>
+							<video id="call-video-local" class="w-full h-full object-cover" muted autoplay playsinline></video>
 							<div class="absolute top-2 left-2 bg-surface-900/60 dark:bg-surface-950/80 text-surface-0 text-2xs px-1.5 py-0.5 rounded-md">You</div>
 						</div>
 						
@@ -285,11 +276,14 @@
 						</div>
 						
 						<!-- Call Info -->
-						<div class="absolute top-5 left-5 bg-surface-900/60 dark:bg-surface-950/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-surface-0 text-sm flex items-center gap-2 shadow-soft dark:shadow-dark-soft">
-							<div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-							<span class="tabular-nums">00:45:23</span>
-							<span class="text-surface-400 dark:text-surface-500">•</span>
-							<span>Room: X7F9K2</span>
+						<div class="absolute top-5 left-5 bg-surface-900/60 dark:bg-surface-950/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-soft dark:shadow-dark-soft">
+							<div id="connection-quality" class="absolute top-2 left-7 w-2 h-2 rounded-full bg-green-400"></div>
+							
+							<div id="current-peer-info" class="inline-flex items-center gap-3">
+								<div class="w-6 h-6 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center overflow-hidden">
+								</div>
+								<p class="text-sm leading-tight font-medium text-surface-0 dark:text-surface-100 truncate"></p>
+							</div>
 						</div>
 					</div>
 				</article>
@@ -388,12 +382,7 @@
 									<input name="email" type="email" placeholder="email" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
 								</div>
 								
-								<div>
-									<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Bio</label>
-									<textarea name="bio" placeholder="Write something about yourself..." class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800 h-24"></textarea>
-								</div>
-								
-								<div class="flex gap-3 pt-1">
+								<div class="flex gap-3 pt-3">
 									<button type="reset" class="px-5 py-2.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-medium rounded-lg transition-colors duration-200 active:scale-95 flex-1">
 										Delete
 									</button>
@@ -473,18 +462,6 @@
 			</div>
 		</div>
 	</div>
-	
-	<!-- <script defer>
-		function loadEruda() {
-			var script = document.createElement('script');
-			script.src = "https://cdn.jsdelivr.net/npm/eruda";
-			document.body.append(script);
-			script.onload = function() {
-				eruda.init();
-			}
-		}
-		loadEruda()
-	</script> -->
 	
 	<audio id="call-audio-remote" autoplay></audio>
 	<script src="https://unpkg.com/validator@latest/validator.min.js"></script>

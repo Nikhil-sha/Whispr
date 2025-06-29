@@ -50,6 +50,7 @@ const callPeerBtn = document.getElementById('btn-call-peer');
 const copyIdBtn = document.getElementById('btn-copy-id');
 const shareUrlBtn = document.getElementById('btn-share-url');
 const peerListContainer = document.getElementById('peer-list');
+const currentPeerInfo = document.getElementById('current-peer-info');
 
 const savedPeerId = sessionStorage.getItem('whispr-peer-id') || generateId();
 const peer = new Peer(savedPeerId);
@@ -78,7 +79,7 @@ function toggleFullScreen() {
  if (!document.fullscreenElement) {
   viewEls[1].firstElementChild.requestFullscreen();
  } else {
-  document.exitFullscreen?.();
+  document.exitFullscreen();
  }
 }
 
@@ -231,6 +232,40 @@ function initPeerList() {
  });
 }
 
+function updateCurrentPeer(type, name, imageUrl) {
+ const peerImage = currentPeerInfo.querySelector('div');
+ const peerName = currentPeerInfo.querySelector('p');
+ 
+ switch (type) {
+  case 'reset':
+   peerImage.innerHTML = '';
+   peerName.textContent = '';
+   
+   if (!peerImage.classList.contains('hidden')) {
+    peerImage.classList.add('hidden');
+   }
+   
+   if (!peerName.classList.contains('hidden')) {
+    peerName.classList.add('hidden');
+   }
+   break;
+   
+  default:
+   peerImage.innerHTML = imageUrl !== null || imageUrl !== '' ?
+    `<img class="object-cover w-full h-full" src="${imageUrl}" alt="peer profile picture">` :
+    '<i class="fas fa-user text-surface-600 dark:text-surface-300 text-xs"></i>';
+   peerName.textContent = name;
+   
+   if (peerImage.classList.contains('hidden')) {
+    peerImage.classList.remove('hidden');
+   }
+   
+   if (peerName.classList.contains('hidden')) {
+    peerName.classList.remove('hidden');
+   }
+ }
+}
+
 function updatePeeList(newPeer) {
  if (typeof newPeer !== 'object' || newPeer === null) {
   return;
@@ -315,7 +350,6 @@ function initProfile() {
   profileForm.name.value = '';
   profileForm.profilePicture.value = '';
   profileForm.email.value = '';
-  profileForm.bio.value = '';
   
   updateProfilePicture('reset');
   
@@ -336,7 +370,6 @@ function initProfile() {
  profileForm.name.value = profileData.name;
  profileForm.profilePicture.value = profileData.profilePicture;
  profileForm.email.value = profileData.email;
- profileForm.bio.value = profileData.bio;
  
  updateProfilePicture('set', profileData.profilePicture);
  
@@ -370,7 +403,6 @@ function updateProfile(e) {
   name: this.name.value || 'Anonymous',
   profilePicture: this.profilePicture.value || null,
   email: this.email.value || null,
-  bio: this.bio.value || null
  };
  
  localStorage.setItem('whispr-profile', JSON.stringify(profileData));
@@ -518,6 +550,9 @@ function cleanupCallResources() {
   localStream = null;
  }
  
+ audioEnabled = true;
+ videoEnabled = true;
+ 
  // Clear video elements
  localVideoEl.srcObject = null;
  remoteVideoEl.srcObject = null;
@@ -531,6 +566,7 @@ function cleanupCallResources() {
  
  if (currentCall) {
   currentCall.close();
+  updateCurrentPeer('reset');
   createToast('success', 'Call ended', 'The call has been disconnected');
  }
  
@@ -584,7 +620,6 @@ function setupCallEvents(call) {
  if (currentCall) currentCall.close();
  currentCall = call;
  rtcObject = call.peerConnection;
- console.log(call);
  
  call.on('stream', remoteStream => {
   const videoStream = new MediaStream([remoteStream.getVideoTracks()[0]]);
@@ -594,12 +629,10 @@ function setupCallEvents(call) {
   remoteAudioEl.srcObject = audioStream;
  });
  
- // Inside setupCallEvents()
- call.on('close', cleanupCallResources); // PeerJS-level cleanup
- // call.on('disconnected', cleanupCallResources); // Faster than ICE
+ call.on('close', cleanupCallResources);
  rtcObject.oniceconnectionstatechange = () => {
   if (rtcObject.iceConnectionState === 'disconnected') {
-   cleanupCallResources(); // WebRTC-level cleanup
+   cleanupCallResources();
   }
  };
  call.on('error', () => {
@@ -637,8 +670,24 @@ function setupPeerEventListeners() {
     .then(stream => {
      localStream = stream;
      localVideoEl.srcObject = stream;
+     
      resolveRouter('call');
+     updateCurrentPeer('set', peerInfo.name, peerInfo.profilePicture);
      call.answer(stream);
+     
+     const dataConn = peer.connect(call.peer);
+     
+     dataConn.on('open', () => {
+      dataConn.send({
+       type: 'metadata',
+       ...profileData
+      });
+      
+      setTimeout(() => {
+       if (dataConn.open) dataConn.close();
+      }, 1000);
+     });
+     
      setupCallEvents(call);
      createToast('success', 'Call answered!', 'Connected with caller');
     })
@@ -655,10 +704,23 @@ function setupPeerEventListeners() {
   
   showModal(
    'Incoming call!',
-   `${call.metadata?.name || call.peer} is calling`,
+   `${call.metadata.name || call.peer} is calling`,
    answerCall,
    rejectCall
   );
+ });
+ 
+ peer.on('connection', conn => {
+  conn.on('data', data => {
+   if (data.type === 'metadata') {
+    updatePeeList({
+     id: call.peer,
+     ...data
+    });
+    
+    updateCurrentPeer('set', data.name, data.profilePicture);
+   }
+  });
  });
  
  peer.on('disconnected', () => {
@@ -758,6 +820,9 @@ function main() {
  initPeerList();
  initProfile();
  resolveRouter();
+ 
+ const params = new URLSearchParams(window.location.search);
+ if (params.has('peer')) callPeer(params.get('peer'));
 }
 
 // Event listeners for cleanup
