@@ -221,7 +221,7 @@ function initPeerList(list) {
   </div>
   `;
   
-  peerListContainer.appendChild(itemContainer);
+  peerListContainer.prepend(itemContainer);
   
   itemContainer.addEventListener('click', () => {
    callPeer(item.id);
@@ -577,6 +577,7 @@ function toggleMask() {
 function setupCallEvents(call) {
  if (currentCall) currentCall.close();
  currentCall = call;
+ rtcObject = call.peerConnection;
  
  call.on('stream', remoteStream => {
   const videoStream = new MediaStream([remoteStream.getVideoTracks()[0]]);
@@ -586,14 +587,19 @@ function setupCallEvents(call) {
   remoteAudioEl.srcObject = audioStream;
  });
  
- call.on('close', endCall);
+ // Inside setupCallEvents()
+ call.on('close', cleanupCallResources); // PeerJS-level cleanup
+ call.on('disconnected', cleanupCallResources); // Faster than ICE
+ rtcObject.oniceconnectionstatechange = () => {
+  if (rtcObject.iceConnectionState === 'disconnected') {
+   cleanupCallResources(); // WebRTC-level cleanup
+  }
+ };
  call.on('error', () => {
   createToast('error', 'Call error!', 'An error occurred');
-  endCall();
+  cleanupCallResources();
  });
  
- // Setup connection monitoring
- rtcObject = call.peerConnection;
  if (connCheckupInterval) clearInterval(connCheckupInterval);
  
  connCheckupInterval = setInterval(() => {
@@ -748,4 +754,3 @@ function main() {
 // Event listeners for cleanup
 window.addEventListener('DOMContentLoaded', main);
 window.addEventListener('beforeunload', cleanupApp);
-// window.addEventListener('pagehide', cleanupApp);
