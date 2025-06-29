@@ -818,9 +818,9 @@ function main() {
  setInCallInteractions(false);
  setupPeerEventListeners();
  initPeerList();
- updateCurrentPeer('reset');
  initProfile();
  resolveRouter('home');
+ updateCurrentPeer('reset');
  
  const params = new URLSearchParams(window.location.search);
  if (params.has('peer')) callPeer(params.get('peer'));
