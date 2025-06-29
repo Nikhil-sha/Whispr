@@ -820,7 +820,7 @@ function main() {
  initPeerList();
  updateCurrentPeer('reset');
  initProfile();
- resolveRouter();
+ resolveRouter('home');
  
  const params = new URLSearchParams(window.location.search);
  if (params.has('peer')) callPeer(params.get('peer'));
