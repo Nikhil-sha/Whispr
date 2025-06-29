@@ -655,6 +655,7 @@ function setupPeerEventListeners() {
  });
  
  peer.on('disconnected', () => {
+  cleanupCallResources()
   createToast('error', 'Disconnected', 'Reconnecting...');
   peer.reconnect();
  });
@@ -665,6 +666,7 @@ function setupPeerEventListeners() {
  });
  
  peer.on('error', err => {
+  cleanupCallResources();
   createToast('error', 'Connection error', 'A peer error occurred');
  });
 }
