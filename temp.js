@@ -623,7 +623,9 @@ let videoEnabled = true;
 let prefFacingMode = 'user';
 let profileData = null;
 let peerIdToCall = null;
+let storedPeerList = null;
 
+const urlRegEx = /^(https?|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
 const baseUrl = window.location.origin + window.location.pathname;
 const overlay = document.getElementById('overlay');
 const toastContainer = document.getElementById('toast-container');
@@ -640,19 +642,24 @@ const modalCancelBtn = document.getElementById('btn-cancel-modal');
 const modalConfirmBtn = document.getElementById('btn-confirm-modal');
 const viewEls = document.getElementById('views').children;
 const viewNavBtns = document.getElementById('view-nav').children;
-const localVideo = document.getElementById('call-video-local');
-const remoteVideo = document.getElementById('call-video-remote');
-const remoteAudio = document.getElementById('call-audio-remote');
+const localVideoEl = document.getElementById('call-video-local');
+const remoteVideoEl = document.getElementById('call-video-remote');
+const remoteAudioEl = document.getElementById('call-audio-remote');
 const callControls = document.getElementById('call-controls-container').children;
 const toggleMuteBtn = document.getElementById('btn-toggle-mute');
 const toggleMaskBtn = document.getElementById('btn-toggle-mask');
 const toggleFullscreenBtn = document.getElementById('btn-toggle-fullscreen');
 const endCallBtn = document.getElementById('btn-end-call');
 const profileForm = document.getElementById('form-update-profile');
-const profPicContainer = document.getElementById('profile-picture-container');
+const profileImages = document.querySelectorAll('img[data-profile-picture]');
+const profileImageIcons = document.querySelectorAll('i[data-profile-placeholder]');
+const shortNameEls = document.querySelectorAll('[data-name-short]');
+const fullNameEls = document.querySelectorAll('[data-name-full]');
+const emailEls = document.querySelectorAll('[data-email]');
 const callPeerBtn = document.getElementById('btn-call-peer');
 const copyIdBtn = document.getElementById('btn-copy-id');
 const shareUrlBtn = document.getElementById('btn-share-url');
+const peerListContainer = document.getElementById('peer-list');
 
 const savedPeerId = sessionStorage.getItem('whispr-peer-id') || generateId();
 const peer = new Peer(savedPeerId);
@@ -664,6 +671,8 @@ function isSidebarOpen() { return !sidebarEl.classList.contains('-translate-x-fu
 function isModalVisible() { return !modalEl.classList.contains('hidden'); }
 
 function getHash() { return location.hash.slice(2); }
+
+function isUrl(url) { return urlRegEx.test(url); }
 
 function fadeEnter(element, opacity = 0) {
  if (element.classList.contains('hidden')) return;
@@ -800,6 +809,53 @@ function setSidebar(state) {
  }
 }
 
+function initPeerList(list) {
+ // Clear the container first
+ peerListContainer.innerHTML = '';
+ 
+ if (!list || !Array.isArray(list)) {
+  return;
+ }
+ 
+ list.forEach(item => {
+  const itemContainer = document.createElement('div');
+  itemContainer.className = 'flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors duration-150';
+  
+  itemContainer.innerHTML = `
+  <div class="w-8 h-8 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
+   ${item.profilePicture ? `<img class="object-cover w-full h-full rounded-full" src="${item.profilePicture}" alt="profile picture">` : '<i class="fas fa-user text-surface-600 dark:text-surface-300 text-xs"></i>'}
+  </div>
+  <div class="flex-1 inline-flex flex-col min-w-0">
+   <p class="text-sm leading-tight font-medium text-surface-900 dark:text-surface-100 truncate">${item.name || 'Anonymous'}</p>
+   <span class="text-xs leading-tight text-surface-500 dark:text-surface-400">${item.email || ''}</span>
+  </div>
+  `;
+  
+  peerListContainer.appendChild(itemContainer);
+  
+  itemContainer.addEventListener('click', () => {
+   callPeer(item.id);
+  }, { signal });
+ });
+}
+
+function updatePeeList(newPeer) {
+ if (typeof newPeer !== 'object' || newPeer === null) {
+  return;
+ }
+ 
+ storedPeerList = localStorage.getItem('whispr-peer-list') || [];
+ 
+ if (storedPeerList.length > 6) {
+  storedPeerList.shift();
+ }
+ storedPeerList.push(newPeer);
+ 
+ localStorage.setItem('whispr-peer-list', JSON.stringify(storedPeerList));
+ 
+ initPeerList(storedPeerList);
+}
+
 function resolveRouter(route = null) {
  const hash = typeof route === 'string' && route !== null ?
   (location.hash = `#/${route}`, route) :
@@ -821,18 +877,20 @@ function resolveRouter(route = null) {
 }
 
 function updateProfilePicture(type, url) {
- const image = profPicContainer.querySelector('img');
- const placeholder = profPicContainer.querySelector('i');
- 
  switch (type) {
   case 'reset':
-   if (!image.classList.contains('hidden')) {
-    image.classList.add('hidden');
-    image.src = '';
-   }
-   if (placeholder.classList.contains('hidden')) {
-    placeholder.classList.remove('hidden');
-   }
+   profileImages.forEach(image => {
+    if (!image.classList.contains('hidden')) {
+     image.classList.add('hidden');
+     image.src = '';
+    }
+   });
+   
+   profileImageIcons.forEach(imageIcon => {
+    if (imageIcon.classList.contains('hidden')) {
+     imageIcon.classList.remove('hidden');
+    }
+   });
    break;
    
   case 'set':
@@ -841,19 +899,24 @@ function updateProfilePicture(type, url) {
     return;
    }
    
-   if (image.classList.contains('hidden')) {
-    image.classList.remove('hidden');
-   }
-   if (!placeholder.classList.contains('hidden')) {
-    placeholder.classList.add('hidden');
-   }
+   profileImages.forEach(image => {
+    if (image.classList.contains('hidden')) {
+     image.classList.remove('hidden');
+    }
+   });
    
-   image.src = url;
+   profileImageIcons.forEach(imageIcon => {
+    if (!imageIcon.classList.contains('hidden')) {
+     imageIcon.classList.add('hidden');
+    }
+   });
+   
+   profileImages.forEach(image => image.src = url);
    break;
  }
 }
 
-function initProfileForm() {
+function initProfile() {
  profileData = JSON.parse(localStorage.getItem('whispr-profile'));
  
  if (!profileData) {
@@ -861,7 +924,20 @@ function initProfileForm() {
   profileForm.profilePicture.value = '';
   profileForm.email.value = '';
   profileForm.bio.value = '';
+  
   updateProfilePicture('reset');
+  
+  fullNameEls.forEach(el => {
+   el.textContent = 'Anonymous';
+  });
+  
+  shortNameEls.forEach(el => {
+   el.textContent = 'there';
+  });
+  
+  emailEls.forEach(el => {
+   el.textContent = '';
+  });
   return;
  }
  
@@ -869,21 +945,44 @@ function initProfileForm() {
  profileForm.profilePicture.value = profileData.profilePicture;
  profileForm.email.value = profileData.email;
  profileForm.bio.value = profileData.bio;
+ 
  updateProfilePicture('set', profileData.profilePicture);
+ 
+ fullNameEls.forEach(el => {
+  el.textContent = profileData.name ? profileData.name : 'Anonymous';
+ });
+ 
+ shortNameEls.forEach(el => {
+  el.textContent = profileData.name.includes(' ') ? profileData.name.split(' ')[0] : profileData.name;
+ });
+ 
+ emailEls.forEach(el => {
+  el.textContent = profileData.email;
+ });
 }
 
 function updateProfile(e) {
  e.preventDefault();
  
+ if (!isUrl(this.profilePicture.value)) {
+  createToast('error', 'Invalid profile image url!', 'Entered url for profile image is not valid.');
+  return;
+ }
+ 
+ if (!validator.isEmail(this.email.value)) {
+  createToast('error', 'Invalid email!', 'Entered email address is either not complete or not valid.');
+  return;
+ }
+ 
  profileData = {
-  name: this.name.value || 'Unknown',
+  name: this.name.value || 'Anonymous',
   profilePicture: this.profilePicture.value || null,
   email: this.email.value || null,
   bio: this.bio.value || null
  };
  
  localStorage.setItem('whispr-profile', JSON.stringify(profileData));
- initProfileForm();
+ initProfile();
  createToast('success', 'Profile Updated!', 'But! Be mindful of the information you enter.');
 }
 
@@ -894,7 +993,7 @@ function deleteProfile() {
   () => {
    localStorage.removeItem('whispr-profile');
    profileData = null;
-   initProfileForm();
+   initProfile();
    createToast('error', 'Warning!', 'User Information deleted.');
   }
  );
@@ -1005,7 +1104,7 @@ async function initiateNewCall(peerId) {
   
   const stream = await getMediaStream(prefFacingMode);
   localStream = stream;
-  localVideo.srcObject = stream;
+  localVideoEl.srcObject = stream;
   
   const call = peer.call(remoteId, stream, { metadata: profileData });
   setupCallEvents(call);
@@ -1028,9 +1127,9 @@ function cleanupCallResources() {
  }
  
  // Clear video elements
- localVideo.srcObject = null;
- remoteVideo.srcObject = null;
- remoteAudio.srcObject = null;
+ localVideoEl.srcObject = null;
+ remoteVideoEl.srcObject = null;
+ remoteAudioEl.srcObject = null;
  
  // Clear connection monitoring
  if (connCheckupInterval) {
@@ -1093,8 +1192,8 @@ function setupCallEvents(call) {
   const videoStream = new MediaStream([remoteStream.getVideoTracks()[0]]);
   const audioStream = new MediaStream([remoteStream.getAudioTracks()[0]]);
   
-  remoteVideo.srcObject = videoStream;
-  remoteAudio.srcObject = audioStream;
+  remoteVideoEl.srcObject = videoStream;
+  remoteAudioEl.srcObject = audioStream;
  });
  
  call.on('close', cleanupCallResources);
@@ -1126,10 +1225,15 @@ function setupPeerEventListeners() {
  
  peer.on('call', call => {
   const answerCall = () => {
+   const peerInfo = {
+    id: call.peer,
+    ...call.metadata
+   };
+   updatePeeList(peerInfo);
    getMediaStream(prefFacingMode)
     .then(stream => {
      localStream = stream;
-     localVideo.srcObject = stream;
+     localVideoEl.srcObject = stream;
      resolveRouter('call');
      call.answer(stream);
      setupCallEvents(call);
@@ -1246,7 +1350,7 @@ function main() {
  // Initialize app
  setInCallInteractions(false);
  setupPeerEventListeners();
- initProfileForm();
+ initProfile();
  resolveRouter();
 }
 
