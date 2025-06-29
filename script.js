@@ -818,6 +818,7 @@ function main() {
  setInCallInteractions(false);
  setupPeerEventListeners();
  initPeerList();
+ updateCurrentPeer('reset');
  initProfile();
  resolveRouter();
  
