@@ -1350,6 +1350,7 @@ function main() {
  // Initialize app
  setInCallInteractions(false);
  setupPeerEventListeners();
+ initPeerList(JSON.parse(localStorage.getItem('whispr-peer-list')));
  initProfile();
  resolveRouter();
 }
