@@ -713,7 +713,7 @@ function startCallTimer() {
 function stopCallTimer() {
  clearInterval(callTimerInterval);
  callTimerInterval = null;
- document.getElementById("call-timer").textContent = "00:00";
+ callDurationEl.textContent = "00:00";
 }
 
 function setupCallEvents(call) {
@@ -982,6 +982,12 @@ async function checkConnection() {
  
  const stats = await rtcObject.getStats();
  let selectedPairId = null;
+ let quality = {
+  rtt: null,
+  jitter: null,
+  packetsLost: null,
+  bitrateSend: null,
+ };
  
  stats.forEach(stat => {
   if (stat.type === "transport" && stat.selectedCandidatePairId) {
@@ -991,19 +997,19 @@ async function checkConnection() {
  
  stats.forEach(stat => {
   if (stat.type === "candidate-pair" && stat.id === selectedPairId) {
-   connLatencyEl.textContent = stat.currentRoundTripTime * 1000;
+   quality.rtt = stat.currentRoundTripTime * 1000;
   }
   
   if (stat.type === "inbound-rtp" && !stat.isRemote) {
    if (stat.kind === "audio" || stat.kind === "video") {
-    connJitterEl.textContent = stat.jitter * 1000;
-    connPacketsEl.textContent = stat.packetsLost;
+    quality.jitter = stat.jitter * 1000;
+    quality.packetsLost = stat.packetsLost;
    }
   }
   
   if (stat.type === "outbound-rtp" && !stat.isRemote) {
    if (stat.kind === "audio" || stat.kind === "video") {
-    connBitrateEl.textContent = stat.bytesSent;
+    quality.bitrateSend = stat.bytesSent;
    }
   }
  });
@@ -1015,6 +1021,11 @@ async function checkConnection() {
   loss: scoreMetric(quality.packetsLost, { good: 1, bad: 50 }),
   bitrate: scoreMetric(quality.bitrateSend, { good: 250000, bad: 80000 }),
  };
+ 
+ connBitrateEl.textContent = quality.bitrate;
+ connJitterEl.textContent = quality.jitter;
+ connLatencyEl.textContent = quality.rtt;
+ connPacketsEl.textContent = quality.packetsLost;
  
  const totalScore = scores.rtt + scores.jitter + scores.loss + scores.bitrate;
  connIndicatorEl.className = 'absolute top-2 left-7 w-2 h-2 rounded-full bg-gray-400';
