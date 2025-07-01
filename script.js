@@ -663,6 +663,7 @@ function cleanupCallResources() {
  if (currentCall) {
   currentCall.close();
   updateCurrentPeer('reset');
+  updateStatus('available');
   createToast('info', 'Call ended', 'The call has been disconnected');
  }
  
