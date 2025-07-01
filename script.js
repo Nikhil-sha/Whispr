@@ -55,7 +55,7 @@ const profileImages = document.querySelectorAll('img[data-profile-picture]');
 const profileImageIcons = document.querySelectorAll('i[data-profile-placeholder]');
 const shortNameEls = document.querySelectorAll('[data-name-short]');
 const fullNameEls = document.querySelectorAll('[data-name-full]');
-const ownIdEls = document.querySelectorAll('[data-id]');
+const statusEls = document.querySelectorAll('[data-status]');
 const callPeerBtn = document.getElementById('btn-call-peer');
 const copyIdBtn = document.getElementById('btn-copy-id');
 const shareUrlBtn = document.getElementById('btn-share-url');
@@ -76,7 +76,7 @@ function getHash() { return location.hash.slice(2); }
 function isUrl(url) { return urlRegEx.test(url); }
 
 function updateStatus(status = 'available') {
- updateStatus(el => {
+ statusEls.forEach(el => {
   el.textContent = status;
  });
 }
