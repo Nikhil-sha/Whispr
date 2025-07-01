@@ -10,6 +10,12 @@ let connCheckupInterval = null;
 let rtcObject = null;
 let audioEnabled = true;
 let videoEnabled = true;
+let availableCameras = [];
+let availableMicrophones = [];
+let availableSpeakers = [];
+let selectedCamera;
+let selectedMic;
+let selectedSpeaker;
 let prefFacingMode = 'user';
 let profileData = null;
 let peerIdToCall = null;
@@ -21,6 +27,7 @@ const overlay = document.getElementById('overlay');
 const toastContainer = document.getElementById('toast-container');
 const successToastTemp = document.getElementById('template-toast-success');
 const errorToastTemp = document.getElementById('template-toast-error');
+const infoToastTemp = document.getElementById('template-toast-info');
 const sidebarEl = document.getElementById('sidebar');
 const openSidebarBtn = document.getElementById('btn-open-sidebar');
 const toggleThemeBtn = document.getElementById('btn-toggle-theme');
@@ -40,12 +47,15 @@ const toggleMuteBtn = document.getElementById('btn-toggle-mute');
 const toggleMaskBtn = document.getElementById('btn-toggle-mask');
 const toggleFullscreenBtn = document.getElementById('btn-toggle-fullscreen');
 const endCallBtn = document.getElementById('btn-end-call');
+const selectCameraEl = document.getElementById('select-cameras');
+const selectMicEl = document.getElementById('select-microphones');
+const selectSpeakerEl = document.getElementById('select-speakers');
 const profileForm = document.getElementById('form-update-profile');
 const profileImages = document.querySelectorAll('img[data-profile-picture]');
 const profileImageIcons = document.querySelectorAll('i[data-profile-placeholder]');
 const shortNameEls = document.querySelectorAll('[data-name-short]');
 const fullNameEls = document.querySelectorAll('[data-name-full]');
-const emailEls = document.querySelectorAll('[data-email]');
+const ownIdEls = document.querySelectorAll('[data-id]');
 const callPeerBtn = document.getElementById('btn-call-peer');
 const copyIdBtn = document.getElementById('btn-copy-id');
 const shareUrlBtn = document.getElementById('btn-share-url');
@@ -64,6 +74,41 @@ function isModalVisible() { return !modalEl.classList.contains('hidden'); }
 function getHash() { return location.hash.slice(2); }
 
 function isUrl(url) { return urlRegEx.test(url); }
+
+function updateStatus(status = 'available') {
+ updateStatus(el => {
+  el.textContent = status;
+ });
+}
+
+function getDateAndTime(date = new Date()) {
+ const weekday = date.toLocaleString('en-IN', { weekday: 'short' });
+ const month = date.toLocaleString('en-IN', { month: 'short' });
+ const day = String(date.getDate()).padStart(2, '0');
+ const year = date.getFullYear();
+ 
+ const time = date.toLocaleTimeString('en-IN', {
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true
+ });
+ 
+ return `${weekday} ${month} ${day} ${year}, ${time}`;
+}
+
+function fillOptions(element, array) {
+ element.innerHTML = '';
+ array.forEach(device => {
+  const opt = document.createElement('option');
+  opt.value = device.deviceId;
+  opt.text = device.label;
+  element.appendChild(opt);
+ });
+};
+
+function setPreference(param) {
+ // Tab to edit
+}
 
 function fadeEnter(element, opacity = 0) {
  if (element.classList.contains('hidden')) return;
@@ -84,18 +129,18 @@ function toggleFullScreen() {
 }
 
 function toggleTheme() {
- let preffTheme = localStorage.getItem('whispr-theme') || 'light';
+ let prefTheme = localStorage.getItem('whispr-theme') || 'light';
  
- if (preffTheme === 'light') {
+ if (prefTheme === 'light') {
   document.documentElement.classList.add('dark');
-  preffTheme = 'dark';
+  prefTheme = 'dark';
  } else {
   document.documentElement.classList.remove('dark');
-  preffTheme = 'light';
+  prefTheme = 'light';
  }
  
- localStorage.setItem('whispr-theme', preffTheme);
- createToast('success', 'Theme switched!', `Changed theme preference to ${preffTheme}.`);
+ localStorage.setItem('whispr-theme', prefTheme);
+ createToast('success', 'Theme switched!', `Changed theme preference to ${prefTheme}.`);
 }
 
 function setOverlay(state) {
@@ -119,9 +164,20 @@ function setOverlay(state) {
 }
 
 function createToast(type, heading, text) {
- const toastEl = type === 'success' ?
-  successToastTemp.content.cloneNode(true).firstElementChild :
-  errorToastTemp.content.cloneNode(true).firstElementChild;
+ let toastEl;
+ 
+ switch (type) {
+  case 'success':
+   toastEl = successToastTemp.content.cloneNode(true).firstElementChild;
+   break;
+   
+  case 'error':
+   toastEl = errorToastTemp.content.cloneNode(true).firstElementChild;
+   break;
+   
+  default:
+   toastEl = infoToastTemp.content.cloneNode(true).firstElementChild;
+ }
  
  toastEl.querySelector('h4').textContent = heading;
  toastEl.querySelector('p').textContent = text;
@@ -220,7 +276,7 @@ function initPeerList() {
   </div>
   <div class="flex-1 inline-flex flex-col min-w-0">
    <p class="text-sm leading-tight font-medium text-surface-900 dark:text-surface-100 truncate">${item.name || 'Anonymous'}</p>
-   <span class="text-xs leading-tight text-surface-500 dark:text-surface-400">${item.email || ''}</span>
+   <span class="text-xs leading-tight text-surface-500 dark:text-surface-400">${item.time || ''}</span>
   </div>
   `;
   
@@ -233,6 +289,7 @@ function initPeerList() {
 }
 
 function updateCurrentPeer(type, name, imageUrl) {
+ const currentInfoContainer = currentPeerInfo.closest('div');
  const peerImage = currentPeerInfo.querySelector('div');
  const peerName = currentPeerInfo.querySelector('p');
  
@@ -241,12 +298,8 @@ function updateCurrentPeer(type, name, imageUrl) {
    peerImage.innerHTML = '';
    peerName.textContent = '';
    
-   if (!peerImage.classList.contains('hidden')) {
-    peerImage.classList.add('hidden');
-   }
-   
-   if (!peerName.classList.contains('hidden')) {
-    peerName.classList.add('hidden');
+   if (!currentInfoContainer.classList.contains('hidden')) {
+    currentInfoContainer.classList.add('hidden');
    }
    break;
    
@@ -256,17 +309,13 @@ function updateCurrentPeer(type, name, imageUrl) {
     '<i class="fas fa-user text-surface-600 dark:text-surface-300 text-xs"></i>';
    peerName.textContent = name;
    
-   if (peerImage.classList.contains('hidden')) {
-    peerImage.classList.remove('hidden');
-   }
-   
-   if (peerName.classList.contains('hidden')) {
-    peerName.classList.remove('hidden');
+   if (currentInfoContainer.classList.contains('hidden')) {
+    currentInfoContainer.classList.remove('hidden');
    }
  }
 }
 
-function updatePeeList(newPeer) {
+function updatePeerList(newPeer) {
  if (typeof newPeer !== 'object' || newPeer === null) {
   return;
  }
@@ -349,7 +398,6 @@ function initProfile() {
  if (!profileData) {
   profileForm.name.value = '';
   profileForm.profilePicture.value = '';
-  profileForm.email.value = '';
   
   updateProfilePicture('reset');
   
@@ -360,16 +408,11 @@ function initProfile() {
   shortNameEls.forEach(el => {
    el.textContent = 'there';
   });
-  
-  emailEls.forEach(el => {
-   el.textContent = '';
-  });
   return;
  }
  
  profileForm.name.value = profileData.name;
  profileForm.profilePicture.value = profileData.profilePicture;
- profileForm.email.value = profileData.email;
  
  updateProfilePicture('set', profileData.profilePicture);
  
@@ -379,10 +422,6 @@ function initProfile() {
  
  shortNameEls.forEach(el => {
   el.textContent = profileData.name.includes(' ') ? profileData.name.split(' ')[0] : profileData.name;
- });
- 
- emailEls.forEach(el => {
-  el.textContent = profileData.email;
  });
 }
 
@@ -394,15 +433,9 @@ function updateProfile(e) {
   return;
  }
  
- if (!validator.isEmail(this.email.value)) {
-  createToast('error', 'Invalid email!', 'Entered email address is either not complete or not valid.');
-  return;
- }
- 
  profileData = {
   name: this.name.value || 'Anonymous',
   profilePicture: this.profilePicture.value || null,
-  email: this.email.value || null,
  };
  
  localStorage.setItem('whispr-profile', JSON.stringify(profileData));
@@ -418,43 +451,104 @@ function deleteProfile() {
    localStorage.removeItem('whispr-profile');
    profileData = null;
    initProfile();
-   createToast('error', 'Warning!', 'User Information deleted.');
+   createToast('info', 'Warning!', 'User Information deleted.');
   }
  );
 }
 
-async function getMediaStream(facingMode) {
+// async function getMediaStream(facingMode) {
+//  try {
+//   const stream = await navigator.mediaDevices.getUserMedia({
+//    video: { facingMode },
+//    audio: true
+//   });
+//   return stream;
+//  } catch (error) {
+//   createToast('error', 'Camera access failed!', `Couldn't get camera (${facingMode}), trying alternatives`);
+
+//   const devices = await navigator.mediaDevices.enumerateDevices();
+//   const videoDevices = devices.filter(d => d.kind === 'videoinput');
+
+//   for (const device of videoDevices) {
+//    try {
+//     const stream = await navigator.mediaDevices.getUserMedia({
+//      video: { deviceId: { exact: device.deviceId } },
+//      audio: true
+//     });
+//     const track = stream.getVideoTracks()[0];
+//     const settings = track.getSettings();
+
+//     if (!facingMode || settings.facingMode === facingMode) {
+//      return stream;
+//     }
+//     track.stop();
+//    } catch (e) {
+//     continue;
+//    }
+//   }
+
+//   throw new Error('No suitable camera found');
+//  }
+// }
+
+async function getAvailableMediaDevices() {
+ // Ensure permission to get labels
+ const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+ tempStream.getTracks().forEach(t => t.stop());
+ 
+ const devices = await navigator.mediaDevices.enumerateDevices();
+ 
+ devices.forEach(d => {
+  const data = {
+   label: d.label,
+   deviceId: d.deviceId
+  };
+  if (d.kind === 'videoinput') availableCameras.push(data);
+  else if (d.kind === 'audioinput') availableMicrophones.push(data);
+  else if (d.kind === 'audiooutput') availableSpeakers.push(data);
+ });
+ 
+ fillOptions(selectCameraEl, availableCameras);
+ fillOptions(selectMicEl, availableMicrophones);
+ fillOptions(selectSpeakerEl, availableSpeakers);
+ 
+ selectedCamera = selectCameraEl.value;
+ selectedMic = selectMicEl.value;
+ selectedSpeaker = selectCameraEl.value;
+}
+
+async function getMediaStream(preferredVideoId, preferredAudioId) {
  try {
-  const stream = await navigator.mediaDevices.getUserMedia({
-   video: { facingMode },
-   audio: true
-  });
+  const constraints = {
+   video: preferredVideoId ? { deviceId: { exact: preferredVideoId } } : true,
+   audio: preferredAudioId ? { deviceId: { exact: preferredAudioId } } : true
+  };
+  
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
   return stream;
  } catch (error) {
-  createToast('error', 'Camera access failed!', `Couldn't get camera (${facingMode}), trying alternatives`);
+  createToast('error', 'Media access failed!', 'Trying fallback devices...');
   
   const devices = await navigator.mediaDevices.enumerateDevices();
   const videoDevices = devices.filter(d => d.kind === 'videoinput');
+  const audioDevices = devices.filter(d => d.kind === 'audioinput');
   
-  for (const device of videoDevices) {
-   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-     video: { deviceId: { exact: device.deviceId } },
-     audio: true
-    });
-    const track = stream.getVideoTracks()[0];
-    const settings = track.getSettings();
-    
-    if (!facingMode || settings.facingMode === facingMode) {
-     return stream;
+  // Try any working video+audio combo
+  for (const video of videoDevices) {
+   for (const audio of audioDevices) {
+    try {
+     const fallbackStream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: video.deviceId } },
+      audio: { deviceId: { exact: audio.deviceId } }
+     });
+     return fallbackStream;
+    } catch (e) {
+     continue;
     }
-    track.stop();
-   } catch (e) {
-    continue;
    }
   }
   
-  throw new Error('No suitable camera found');
+  throw new Error('No working camera or mic found');
  }
 }
 
@@ -473,13 +567,15 @@ function generateId() {
  }
  
  sessionStorage.setItem('whispr-peer-id', id);
- createToast('success', 'Id generated!', `Your session ID: ${id}`);
  return id;
 }
 
 async function shareId(type = 'url') {
  try {
-  if (!peer.id) createToast('error', 'Peer ID not available', 'Peer.js is not initialised yet. Refresh the page if this issue persists.');
+  if (!peer.id) {
+   createToast('error', 'Peer ID not available', 'Peer.js is not initialised yet. Refresh the page if this issue persists.');
+   return;
+  }
   
   if (type === 'url') {
    const shareData = {
@@ -502,7 +598,7 @@ async function shareId(type = 'url') {
  } catch (err) {
   const text = type === 'url' ? `${baseUrl}?peer=${peer.id}` : peer.id;
   createToast('error', 'Share failed', 'Try copying manually');
-  if (text) createToast('error', 'Copy this!', text);
+  if (text) createToast('info', 'Copy this!', text);
  }
 }
 
@@ -526,7 +622,7 @@ async function initiateNewCall(peerId) {
   const remoteId = peerId || prompt('Enter peer ID to call:');
   if (!remoteId) throw new Error('No ID provided');
   
-  const stream = await getMediaStream(prefFacingMode);
+  const stream = await getMediaStream(selectedCamera, selectedMic);
   localStream = stream;
   localVideoEl.srcObject = stream;
   
@@ -567,7 +663,7 @@ function cleanupCallResources() {
  if (currentCall) {
   currentCall.close();
   updateCurrentPeer('reset');
-  createToast('success', 'Call ended', 'The call has been disconnected');
+  createToast('info', 'Call ended', 'The call has been disconnected');
  }
  
  // Reset call state
@@ -590,7 +686,7 @@ function endCall() {
 
 function toggleMute() {
  if (!localStream) {
-  createToast('error', 'No active call!', 'You are not in a call');
+  createToast('info', 'No active call!', 'You are not in a call');
   return;
  }
  
@@ -604,7 +700,7 @@ function toggleMute() {
 
 function toggleMask() {
  if (!localStream) {
-  createToast('error', 'No active call!', 'You are not in a call');
+  createToast('info', 'No active call!', 'You are not in a call');
   return;
  }
  
@@ -627,6 +723,15 @@ function setupCallEvents(call) {
   
   remoteVideoEl.srcObject = videoStream;
   remoteAudioEl.srcObject = audioStream;
+  
+  if ('setSinkId' in remoteAudioEl && selectedSpeaker) {
+   try {
+    remoteAudioEl.setSinkId(selectedSpeaker);
+    console.log('Speaker switched to:', selectedSpeaker);
+   } catch (err) {
+    console.warn('Speaker switching failed:', err);
+   }
+  }
  });
  
  call.on('close', cleanupCallResources);
@@ -644,7 +749,7 @@ function setupCallEvents(call) {
  
  connCheckupInterval = setInterval(() => {
   if (rtcObject && ['disconnected', 'failed'].includes(rtcObject.iceConnectionState)) {
-   createToast('error', 'Connection lost', 'Peer disconnected');
+   createToast('info', 'Connection lost', 'Peer disconnected');
    cleanupCallResources();
   }
  }, 5000);
@@ -655,18 +760,24 @@ function setupCallEvents(call) {
 
 function setupPeerEventListeners() {
  peer.on('open', id => {
-  const peerIdToJoin = new URLSearchParams(window.location.search).get('peer');
-  if (peerIdToJoin) callPeer(peerIdToJoin);
+  updateStatus("available");
+  
+  createToast('info', 'Id generated!', `Your session ID: ${id}`);
+  
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('peer')) callPeer(params.get('peer'));
  });
  
  peer.on('call', call => {
   const answerCall = () => {
+   const time = getDateAndTime();
    const peerInfo = {
+    time,
     id: call.peer,
     ...call.metadata
    };
-   updatePeeList(peerInfo);
-   getMediaStream(prefFacingMode)
+   updatePeerList(peerInfo);
+   getMediaStream(selectedCamera, selectedMic)
     .then(stream => {
      localStream = stream;
      localVideoEl.srcObject = stream;
@@ -674,6 +785,7 @@ function setupPeerEventListeners() {
      resolveRouter('call');
      updateCurrentPeer('set', peerInfo.name, peerInfo.profilePicture);
      call.answer(stream);
+     updateStatus("in a call");
      
      const dataConn = peer.connect(call.peer);
      
@@ -713,8 +825,10 @@ function setupPeerEventListeners() {
  peer.on('connection', conn => {
   conn.on('data', data => {
    if (data.type === 'metadata') {
-    updatePeeList({
-     id: call.peer,
+    const time = getDateAndTime();
+    updatePeerList({
+     time,
+     id: conn.peer,
      ...data
     });
     
@@ -724,17 +838,20 @@ function setupPeerEventListeners() {
  });
  
  peer.on('disconnected', () => {
+  updateStatus("not reachable");
   cleanupCallResources()
-  createToast('error', 'Disconnected', 'Reconnecting...');
+  createToast('info', 'Disconnected', 'Reconnecting...');
   peer.reconnect();
  });
  
  peer.on('close', () => {
-  createToast('error', 'Signed out', 'Refresh to create new session');
+  updateStatus("not reachable");
+  createToast('info', 'Signed out', 'Refresh to create new session');
   cleanupCallResources();
  });
  
  peer.on('error', err => {
+  updateStatus("unavailable due to some error");
   cleanupCallResources();
   createToast('error', 'Connection error', 'A peer error occurred');
  });
@@ -808,7 +925,7 @@ function main() {
  
  document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === 'visible') {
-   createToast('success', 'Welcome back', 'Where did you go?');
+   createToast('info', 'Welcome back', 'Where did you go?');
   }
  }, { signal });
  
@@ -821,9 +938,7 @@ function main() {
  initProfile();
  resolveRouter('home');
  updateCurrentPeer('reset');
- 
- const params = new URLSearchParams(window.location.search);
- if (params.has('peer')) callPeer(params.get('peer'));
+ getAvailableMediaDevices();
 }
 
 // Event listeners for cleanup

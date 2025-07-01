@@ -36,7 +36,6 @@
 
 <body class="h-full h-dvh flex flex-col bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-surface-950 dark:to-surface-900">
 	<template id="template-toast-success">
-		<!-- Success Toast -->
 		<div class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden transition-all duration-300">
 			<div class="flex items-start gap-3 p-4">
 				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500">
@@ -53,8 +52,24 @@
 		</div>
 	</template>
 	
+	<template id="template-toast-info">
+		<div class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden transition-all duration-300">
+			<div class="flex items-start gap-3 p-4">
+				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-blue-500">
+					<i class="fas fa-info-circle"></i>
+				</div>
+				<div class="flex-1">
+					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Info</h4>
+					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Something worth noting just happened</p>
+				</div>
+			</div>
+			<div class="h-1 bg-blue-500/20">
+				<div class="h-full w-full bg-blue-500 animate-progress"></div>
+			</div>
+		</div>
+	</template>
+	
 	<template id="template-toast-error">
-		<!-- Error Toast -->
 		<div class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden">
 			<div class="flex items-start gap-3 p-4">
 				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-red-500">
@@ -150,13 +165,11 @@
 			</div>
 			<div class="w-0 grow">
 				<p data-name-full class="text-sm font-medium text-surface-900 dark:text-surface-100 truncate">Anonymous</p>
-				<p data-email class="text-xs text-surface-500 dark:text-surface-400 truncate"></p>
+				<p data-id class="text-xs text-surface-500 dark:text-surface-400 truncate"></p>
 			</div>
 		</div>
 		
-		<!-- Sidebar Content -->
 		<div class="h-0 grow overflow-y-auto no-scrollbar">
-			<!-- Navigation -->
 			<nav class="p-2 space-y-1">
 				<a href="#/home" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">
 					<i class="fas fa-home text-sm w-5 text-center"></i>
@@ -176,7 +189,6 @@
 				</a>
 			</nav>
 			
-			<!-- Recent Calls Section -->
 			<div class="px-2 py-3 border-t border-surface-100/50 dark:border-surface-700/50">
 				<h3 class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-2 ml-2.5">Recent Calls</h3>
 				<div id="peer-list" class="space-y-2">
@@ -184,7 +196,6 @@
 			</div>
 		</div>
 		
-		<!-- Sidebar Footer -->
 		<div class="px-5 py-3 border-t border-surface-100/50 dark:border-surface-700/50 bg-surface-0 dark:bg-surface-800">
 			<button class="w-full flex items-center gap-2 px-3 py-2 text-sm text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors duration-150">
 				<i class="fas fa-right-from-bracket text-sm"></i>
@@ -193,18 +204,16 @@
 		</div>
 	</aside>
 	
-	<!-- Overlay for mobile -->
 	<div id="overlay" class="fixed inset-0 bg-surface-900/50 dark:bg-surface-950/70 z-40 backdrop-blur-sm hidden"></div>
 	
-	<!-- Main Content -->
 	<main class="w-full min-h-0 grow overflow-hidden">
 		<div class="w-full h-full flex flex-col max-w-5xl mx-auto">
 			<section id="views" class="w-full min-h-0 grow p-5 overflow-y-auto no-scrollbar">
-				<!-- Page 1 - Welcome -->
 				<article id="home" class="hidden w-full h-fit flex flex-col items-center justify-center gap-9 my-8">
 					<div class="text-center space-y-3.5">
 						<h2 class="text-3xl md:text-4xl font-bold text-surface-900 dark:text-surface-100 tracking-tight leading-tight">Hello, <span data-name-short>there</span>! <span class="text-3xl">👋</span></h2>
 						<p class="text-surface-600 dark:text-surface-400 text-base md:text-lg max-w-md leading-snug">Secure video calls with end-to-end encryption. Your conversations stay private.</p>
+						<p class="text-surface-400 dark:text-surface-600 text-sm md:text-base max-w-md leading-snug">Your are <span data-status>unavailable</span>!</p>
 					</div>
 					
 					<div class="w-full max-w-sm space-y-5">
@@ -245,19 +254,15 @@
 					</div>
 				</article>
 				
-				<!-- Page 2 - Video Call -->
 				<article id="call" class="hidden w-full h-full flex items-center justify-center">
 					<div class="w-full max-w-xl h-full md:aspect-[9/16] flex items-center justify-center bg-surface-900 rounded-2xl overflow-hidden relative border border-surface-900/10 dark:border-surface-800/50">
-						<!-- Remote Video -->
 						<video id="call-video-remote" class="w-full h-full object-cover" muted autoplay playsinline></video>
 						
-						<!-- Local Video PIP -->
 						<div class="absolute bottom-5 right-5 w-[5.4rem] h-[9.6rem] rounded-lg overflow-hidden shadow-hard dark:shadow-dark-hard border-2 border-surface-0/20 dark:border-surface-800/30 bg-surface-800">
 							<video id="call-video-local" class="w-full h-full object-cover" muted autoplay playsinline></video>
 							<div class="absolute top-2 left-2 bg-surface-900/60 dark:bg-surface-950/80 text-surface-0 text-2xs px-1.5 py-0.5 rounded-md">You</div>
 						</div>
 						
-						<!-- Floating Controls -->
 						<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-surface-900/60 dark:bg-surface-950/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-hard dark:shadow-dark-hard border border-surface-0/20 dark:border-surface-800/30">
 							<div id="call-controls-container" class="flex items-center gap-2">
 								<button id="btn-toggle-mute" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
@@ -275,7 +280,6 @@
 							</div>
 						</div>
 						
-						<!-- Call Info -->
 						<div class="absolute top-5 left-5 bg-surface-900/60 dark:bg-surface-950/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-soft dark:shadow-dark-soft">
 							<div id="connection-quality" class="absolute top-2 left-7 w-2 h-2 rounded-full bg-green-400"></div>
 							
@@ -288,7 +292,6 @@
 					</div>
 				</article>
 				
-				<!-- Page 3 - Settings -->
 				<article id="settings" class="hidden w-full h-fit flex-col">
 					<div class="w-full max-w-sm mx-auto space-y-5">
 						<h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Settings</h2>
@@ -299,23 +302,17 @@
 								<div class="space-y-3.5 pt-1.5">
 									<div class="flex items-center justify-between">
 										<span class="text-surface-600 dark:text-surface-400 text-sm">Camera</span>
-										<select class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
-											<option>Default Camera</option>
-											<option>FaceTime HD</option>
+										<select id="select-cameras" class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
 										</select>
 									</div>
 									<div class="flex items-center justify-between">
 										<span class="text-surface-600 dark:text-surface-400 text-sm">Microphone</span>
-										<select class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
-											<option>Default Mic</option>
-											<option>External Mic</option>
+										<select id="select-microphones" class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
 										</select>
 									</div>
 									<div class="flex items-center justify-between">
 										<span class="text-surface-600 dark:text-surface-400 text-sm">Speaker</span>
-										<select class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
-											<option>Default Speaker</option>
-											<option>Headphones</option>
+										<select id="select-speakers" class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
 										</select>
 									</div>
 								</div>
@@ -375,11 +372,6 @@
 								<div>
 									<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Profile Picture</label>
 									<input name="profilePicture" type="url" placeholder="image url" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
-								</div>
-								
-								<div>
-									<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Email</label>
-									<input name="email" type="email" placeholder="email" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
 								</div>
 								
 								<div class="flex gap-3 pt-3">
