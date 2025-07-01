@@ -20,6 +20,8 @@ let prefFacingMode = 'user';
 let profileData = null;
 let peerIdToCall = null;
 let storedPeerList = null;
+let callStartTime = null;
+let callTimerInterval = null;
 
 const urlRegEx = /^(https?|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
 const baseUrl = window.location.origin + window.location.pathname;
@@ -61,6 +63,13 @@ const copyIdBtn = document.getElementById('btn-copy-id');
 const shareUrlBtn = document.getElementById('btn-share-url');
 const peerListContainer = document.getElementById('peer-list');
 const currentPeerInfo = document.getElementById('current-peer-info');
+const callDurationEl = document.querySelector('[data-call-duration]');
+const connIndicatorEl = document.querySelector('[data-conn-indicator]');
+const connLabelEl = document.querySelector('[data-conn-label]');
+const connLatencyEl = document.querySelector('[data-conn-latency]');
+const connJitterEl = document.querySelector('[data-conn-jitter]');
+const connPacketsEl = document.querySelector('[data-conn-packets]');
+const connBitrateEl = document.querySelector('[data-conn-bitrate]');
 
 const savedPeerId = sessionStorage.getItem('whispr-peer-id') || generateId();
 const peer = new Peer(savedPeerId);
@@ -74,6 +83,8 @@ function isModalVisible() { return !modalEl.classList.contains('hidden'); }
 function getHash() { return location.hash.slice(2); }
 
 function isUrl(url) { return urlRegEx.test(url); }
+
+function getLabelById(devices, id) { return devices.find(d => d.deviceId === id).label || 'Unknown'; }
 
 function updateStatus(status = 'available') {
  statusEls.forEach(el => {
@@ -105,10 +116,6 @@ function fillOptions(element, array) {
   element.appendChild(opt);
  });
 };
-
-function setPreference(param) {
- // Tab to edit
-}
 
 function fadeEnter(element, opacity = 0) {
  if (element.classList.contains('hidden')) return;
@@ -197,6 +204,10 @@ function showModal(heading, text, confirmCallback, cancelCallback = null) {
  if (modalCallbacks) {
   modalCancelBtn.removeEventListener('click', modalCallbacks.cancel);
   modalConfirmBtn.removeEventListener('click', modalCallbacks.confirm);
+ }
+ 
+ if (isSidebarOpen()) {
+  setSidebar('close');
  }
  
  modalCallbacks = {
@@ -289,7 +300,7 @@ function initPeerList() {
 }
 
 function updateCurrentPeer(type, name, imageUrl) {
- const currentInfoContainer = currentPeerInfo.closest('div');
+ const currentInfoContainer = currentPeerInfo.closest('details');
  const peerImage = currentPeerInfo.querySelector('div');
  const peerName = currentPeerInfo.querySelector('p');
  
@@ -456,41 +467,6 @@ function deleteProfile() {
  );
 }
 
-// async function getMediaStream(facingMode) {
-//  try {
-//   const stream = await navigator.mediaDevices.getUserMedia({
-//    video: { facingMode },
-//    audio: true
-//   });
-//   return stream;
-//  } catch (error) {
-//   createToast('error', 'Camera access failed!', `Couldn't get camera (${facingMode}), trying alternatives`);
-
-//   const devices = await navigator.mediaDevices.enumerateDevices();
-//   const videoDevices = devices.filter(d => d.kind === 'videoinput');
-
-//   for (const device of videoDevices) {
-//    try {
-//     const stream = await navigator.mediaDevices.getUserMedia({
-//      video: { deviceId: { exact: device.deviceId } },
-//      audio: true
-//     });
-//     const track = stream.getVideoTracks()[0];
-//     const settings = track.getSettings();
-
-//     if (!facingMode || settings.facingMode === facingMode) {
-//      return stream;
-//     }
-//     track.stop();
-//    } catch (e) {
-//     continue;
-//    }
-//   }
-
-//   throw new Error('No suitable camera found');
-//  }
-// }
-
 async function getAvailableMediaDevices() {
  // Ensure permission to get labels
  const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -507,6 +483,11 @@ async function getAvailableMediaDevices() {
   else if (d.kind === 'audioinput') availableMicrophones.push(data);
   else if (d.kind === 'audiooutput') availableSpeakers.push(data);
  });
+ 
+ navigator.mediaDevices.ondevicechange = () => {
+  createToast('info', 'Device list changed!', 'A change was detected in media devices.');
+  getAvailableMediaDevices();
+ };
  
  fillOptions(selectCameraEl, availableCameras);
  fillOptions(selectMicEl, availableMicrophones);
@@ -660,6 +641,10 @@ function cleanupCallResources() {
   connCheckupInterval = null;
  }
  
+ if (callTimerInterval) {
+  stopCallTimer();
+ }
+ 
  if (currentCall) {
   currentCall.close();
   updateCurrentPeer('reset');
@@ -713,6 +698,24 @@ function toggleMask() {
  this.querySelector('i').className = `fas ${videoEnabled ? 'fa-video' : 'fa-video-slash'} text-base`;
 }
 
+function startCallTimer() {
+ callStartTime = Date.now();
+ 
+ callTimerInterval = setInterval(() => {
+  const elapsed = Date.now() - callStartTime;
+  const minutes = Math.floor(elapsed / 60000);
+  const seconds = Math.floor((elapsed % 60000) / 1000);
+  callDurationEl.textContent =
+   `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+ }, 1000);
+}
+
+function stopCallTimer() {
+ clearInterval(callTimerInterval);
+ callTimerInterval = null;
+ document.getElementById("call-timer").textContent = "00:00";
+}
+
 function setupCallEvents(call) {
  if (currentCall) currentCall.close();
  currentCall = call;
@@ -749,13 +752,11 @@ function setupCallEvents(call) {
  if (connCheckupInterval) clearInterval(connCheckupInterval);
  
  connCheckupInterval = setInterval(() => {
-  if (rtcObject && ['disconnected', 'failed'].includes(rtcObject.iceConnectionState)) {
-   createToast('info', 'Connection lost', 'Peer disconnected');
-   cleanupCallResources();
-  }
- }, 5000);
+  checkConnection();
+ }, 2000);
  
  setInCallInteractions(true);
+ startCallTimer();
  resolveRouter('call');
 }
 
@@ -913,6 +914,21 @@ function main() {
   button.addEventListener('click', () => resolveRouter(button.dataset.page), { signal });
  });
  
+ selectCameraEl.addEventListener('change', function() {
+  selectedCamera = this.value;
+  createToast('success', 'Camera preference changed!', `All of your new calls will use the selected camera: ${getLabelById(availableCameras, selectedCamera)}`);
+ }, { signal });
+ 
+ selectMicEl.addEventListener('change', function() {
+  selectedMic = this.value;
+  createToast('success', 'Microphone preference changed!', `All of your new calls will use the selected microphone: ${getLabelById(availableMicrophones, selectedMic)}`);
+ }, { signal });
+ 
+ selectSpeakerEl.addEventListener('change', function() {
+  selectedSpeaker = this.value;
+  createToast('success', 'Camera preference changed!', `All of your new calls will use the selected speaker: ${getLabelById(availableSpeakers, selectedSpeaker)}`);
+ }, { signal });
+ 
  profileForm.addEventListener('reset', deleteProfile, { signal });
  profileForm.addEventListener('submit', updateProfile, { signal });
  
@@ -945,3 +961,74 @@ function main() {
 // Event listeners for cleanup
 window.addEventListener('DOMContentLoaded', main);
 window.addEventListener('beforeunload', cleanupApp);
+
+
+
+
+
+
+async function checkConnection() {
+ if (!rtcObject) {
+  console.warn("No RTCPeerConnection provided!");
+  return;
+ }
+ 
+ const scoreMetric = (value, { good, bad }) => {
+  if (value == null) return 0;
+  if (value < good) return 2;
+  if (value < bad) return 1;
+  return 0;
+ };
+ 
+ const stats = await rtcObject.getStats();
+ let selectedPairId = null;
+ 
+ stats.forEach(stat => {
+  if (stat.type === "transport" && stat.selectedCandidatePairId) {
+   selectedPairId = stat.selectedCandidatePairId;
+  }
+ });
+ 
+ stats.forEach(stat => {
+  if (stat.type === "candidate-pair" && stat.id === selectedPairId) {
+   connLatencyEl.textContent = stat.currentRoundTripTime * 1000;
+  }
+  
+  if (stat.type === "inbound-rtp" && !stat.isRemote) {
+   if (stat.kind === "audio" || stat.kind === "video") {
+    connJitterEl.textContent = stat.jitter * 1000;
+    connPacketsEl.textContent = stat.packetsLost;
+   }
+  }
+  
+  if (stat.type === "outbound-rtp" && !stat.isRemote) {
+   if (stat.kind === "audio" || stat.kind === "video") {
+    connBitrateEl.textContent = stat.bytesSent;
+   }
+  }
+ });
+ 
+ // Calculate scores
+ const scores = {
+  rtt: scoreMetric(quality.rtt, { good: 100, bad: 300 }),
+  jitter: scoreMetric(quality.jitter, { good: 15, bad: 30 }),
+  loss: scoreMetric(quality.packetsLost, { good: 1, bad: 50 }),
+  bitrate: scoreMetric(quality.bitrateSend, { good: 250000, bad: 80000 }),
+ };
+ 
+ const totalScore = scores.rtt + scores.jitter + scores.loss + scores.bitrate;
+ connIndicatorEl.className = 'absolute top-2 left-7 w-2 h-2 rounded-full bg-gray-400';
+ connLabelEl.textContent = 'Unknown';
+ 
+ if (totalScore >= 7) {
+  connIndicatorEl.className = 'absolute top-2 left-7 w-2 h-2 rounded-full bg-green-400';
+  connLabelEl.textContent = 'Excellent';
+ } else if (totalScore >= 4) {
+  connIndicatorEl.className = 'absolute top-2 left-7 w-2 h-2 rounded-full bg-yellow-400';
+  connLabelEl.textContent = 'Fair';
+ } else {
+  connIndicatorEl.className = 'absolute top-2 left-7 w-2 h-2 rounded-full bg-red-400';
+  connLabelEl.textContent = 'Poor';
+ }
+ 
+}
