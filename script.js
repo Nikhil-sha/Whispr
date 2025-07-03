@@ -2114,7 +2114,8 @@ function setupPeerEventListeners() {
   };
   
   const rejectCall = () => {
-   call.close();
+   call.answer();
+   setTimeout(() => call.close(), 1000);
    createToast('info', 'Call declined', 'You declined the incoming call');
   };
   
