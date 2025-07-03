@@ -4,16 +4,24 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Whisper - Secure Video Calling">
+	<meta name="description" content="Whisper - Secure end-to-end encrypted video calling application">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
 	
-	<title>Whisper</title>
+	<title>Whisper - Secure Video Calls</title>
+	
+	<!-- Preload critical resources -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+	<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+	<link rel="preload" href="https://cdn.tailwindcss.com" as="script">
 	
 	<!-- Fonts & Icons -->
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<script src="https://cdn.tailwindcss.com" type="text/javascript" charset="utf-8"></script>
-	<script src="tailwind.config.js"></script>
+	
 	<style>
+		/* Critical CSS */
 		[role="button"],
 		button,
 		[type="button"] {
@@ -31,74 +39,8 @@
 		body {
 			transition: background-color 0.2s ease, color 0.2s ease;
 		}
-	</style>
-</head>
-
-<body class="h-full h-dvh flex flex-col bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-surface-950 dark:to-surface-900">
-	<template id="template-toast-success">
-		<div class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden transition-all duration-300">
-			<div class="flex items-start gap-3 p-4">
-				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500">
-					<i class="fas fa-check-circle"></i>
-				</div>
-				<div class="flex-1">
-					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Success</h4>
-					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Call connected successfully</p>
-				</div>
-			</div>
-			<div class="h-1 bg-green-500/20">
-				<div class="h-full w-full bg-green-500 animate-progress"></div>
-			</div>
-		</div>
-	</template>
-	
-	<template id="template-toast-info">
-		<div class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden transition-all duration-300">
-			<div class="flex items-start gap-3 p-4">
-				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-blue-500">
-					<i class="fas fa-info-circle"></i>
-				</div>
-				<div class="flex-1">
-					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Info</h4>
-					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Something worth noting just happened</p>
-				</div>
-			</div>
-			<div class="h-1 bg-blue-500/20">
-				<div class="h-full w-full bg-blue-500 animate-progress"></div>
-			</div>
-		</div>
-	</template>
-	
-	<template id="template-toast-error">
-		<div class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden">
-			<div class="flex items-start gap-3 p-4">
-				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-red-500">
-					<i class="fas fa-exclamation-circle"></i>
-				</div>
-				<div class="flex-1">
-					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Error</h4>
-					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Failed to join call</p>
-				</div>
-			</div>
-			<div class="h-1 bg-red-500/20">
-				<div class="h-full w-full bg-red-500 animate-progress"></div>
-			</div>
-		</div>
-	</template>
-	
-	<style>
-		.animate-fadeInUp {
-			animation: fadeInUp 0.3s ease-out forwards;
-		}
 		
-		.animate-fadeOutUp {
-			animation: fadeOutUp 0.3s ease-out forwards;
-		}
-		
-		.animate-progress {
-			animation: progress 5s linear forwards;
-		}
-		
+		/* Animation keyframes */
 		@keyframes fadeInUp {
 			from {
 				opacity: 0;
@@ -114,7 +56,7 @@
 		@keyframes fadeOutUp {
 			from {
 				opacity: 1;
-				transform: translateY(0px);
+				transform: translateY(0);
 			}
 			
 			to {
@@ -132,168 +74,239 @@
 				width: 0%;
 			}
 		}
+		
+		.animate-fadeInUp {
+			animation: fadeInUp 0.3s ease-out forwards;
+		}
+		
+		.animate-fadeOutUp {
+			animation: fadeOutUp 0.3s ease-out forwards;
+		}
+		
+		.animate-progress {
+			animation: progress 5s linear forwards;
+		}
 	</style>
+</head>
+
+<body class="h-full h-dvh flex flex-col bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-surface-950 dark:to-surface-900">
+	<!-- Toast Templates -->
+	<template id="template-toast-success">
+		<div role="alert" class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden transition-all duration-300">
+			<div class="flex items-start gap-3 p-4">
+				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-green-500">
+					<i class="fas fa-check-circle" aria-hidden="true"></i>
+				</div>
+				<div class="flex-1">
+					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Success</h4>
+					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Call connected successfully</p>
+				</div>
+			</div>
+			<div class="h-1 bg-green-500/20">
+				<div class="h-full w-full bg-green-500 animate-progress"></div>
+			</div>
+		</div>
+	</template>
+	
+	<template id="template-toast-info">
+		<div role="alert" class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden transition-all duration-300">
+			<div class="flex items-start gap-3 p-4">
+				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-blue-500">
+					<i class="fas fa-info-circle" aria-hidden="true"></i>
+				</div>
+				<div class="flex-1">
+					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Info</h4>
+					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Something worth noting just happened</p>
+				</div>
+			</div>
+			<div class="h-1 bg-blue-500/20">
+				<div class="h-full w-full bg-blue-500 animate-progress"></div>
+			</div>
+		</div>
+	</template>
+	
+	<template id="template-toast-error">
+		<div role="alert" class="animate-fadeInUp bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 shadow-hard dark:shadow-dark-hard rounded-xl max-w-md w-full mx-auto overflow-hidden">
+			<div class="flex items-start gap-3 p-4">
+				<div class="flex-shrink-0 w-5 h-5 mt-0.5 text-red-500">
+					<i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+				</div>
+				<div class="flex-1">
+					<h4 class="text-sm font-medium text-surface-900 dark:text-surface-100">Error</h4>
+					<p class="mt-1 text-sm text-surface-600 dark:text-surface-400">Failed to join call</p>
+				</div>
+			</div>
+			<div class="h-1 bg-red-500/20">
+				<div class="h-full w-full bg-red-500 animate-progress"></div>
+			</div>
+		</div>
+	</template>
 	
 	<!-- Header -->
-	<header class="w-full px-5 py-3.5 z-20 bg-surface-0/90 dark:bg-surface-800/90 backdrop-blur-sm border-b border-surface-200/50 dark:border-surface-700/50 shadow-soft dark:shadow-dark-soft">
+	<header class="w-full px-5 py-3.5 z-20 bg-surface-0 dark:bg-surface-800 border-b border-surface-200/50 dark:border-surface-700/50 shadow-soft dark:shadow-dark-soft">
 		<div class="w-full max-w-5xl mx-auto flex justify-between items-center">
 			<div class="inline-flex items-center gap-2.5">
 				<div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center shadow-medium">
-					<i class="fas fa-comment-dots text-surface-0 text-lg"></i>
+					<i class="fas fa-comment-dots text-surface-0 text-lg" aria-hidden="true"></i>
 				</div>
 				<h1 class="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent tracking-tight">Whisper</h1>
 			</div>
 			
 			<div class="flex items-center gap-2">
-				<button id="btn-toggle-theme" class="w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-surface-300 flex items-center justify-center transition-colors duration-200 active:scale-95">
-					<i class="fas fa-moon dark:hidden"></i>
-					<i class="fas fa-sun hidden dark:block"></i>
+				<button id="btn-toggle-theme" aria-label="Toggle dark mode" class="w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-surface-300 flex items-center justify-center transition-colors duration-200 active:scale-95">
+					<i class="fas fa-moon dark:hidden" aria-hidden="true"></i>
+					<i class="fas fa-sun hidden dark:block" aria-hidden="true"></i>
 				</button>
-				<button id="btn-open-sidebar" class="w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-surface-300 flex items-center justify-center transition-colors duration-200 active:scale-95">
-					<i class="fas fa-ellipsis-vertical text-xs"></i>
+				<button id="btn-open-sidebar" aria-label="Open menu" class="w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 text-surface-700 dark:text-surface-300 flex items-center justify-center transition-colors duration-200 active:scale-95">
+					<i class="fas fa-ellipsis-vertical text-xs" aria-hidden="true"></i>
 				</button>
 			</div>
 		</div>
 	</header>
 	
-	<!-- Sidebar Component -->
-	<aside id="sidebar" class="fixed inset-y-0 left-0 flex flex-col w-64 bg-surface-0 dark:bg-surface-800 shadow-hard dark:shadow-dark-hard border-r border-surface-100/50 dark:border-surface-700/50 rounded-r-lg overflow-hidden z-50 transform transition-all duration-300 ease-in-out -translate-x-full">
+	<!-- Sidebar Navigation -->
+	<aside id="sidebar" class="fixed inset-y-0 left-0 flex flex-col w-64 bg-surface-0 dark:bg-surface-800 shadow-hard dark:shadow-dark-hard border-r border-surface-100/50 dark:border-surface-700/50 rounded-r-lg overflow-hidden z-50 transform transition-all duration-300 ease-in-out -translate-x-full" aria-hidden="true">
 		<div class="px-5 py-4 flex items-center gap-3 border-b border-surface-100/50 dark:border-surface-700/50">
 			<div class="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center overflow-hidden">
-				<i data-profile-placeholder class="fas fa-user text-surface-0"></i>
-				<img data-profile-picture class="hidden object-cover w-full h-full" src="" alt="profile picture">
+				<i data-profile-placeholder class="fas fa-user text-surface-0" aria-hidden="true"></i>
+				<img data-profile-picture class="hidden object-cover w-full h-full" src="" alt="Profile picture">
 			</div>
 			<div class="w-0 grow">
 				<p data-name-full class="text-sm font-medium text-surface-900 dark:text-surface-100 truncate">Anonymous</p>
-				<p data-status class="text-xs text-surface-500 dark:text-surface-400 truncate"></p>
+				<p data-status-head class="text-xs text-surface-500 dark:text-surface-400 truncate"></p>
 			</div>
 		</div>
 		
 		<div class="h-0 grow overflow-y-auto no-scrollbar">
-			<nav class="p-2 space-y-1">
+			<nav aria-label="Main navigation" class="p-2 space-y-1">
 				<a href="#/home" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">
-					<i class="fas fa-home text-sm w-5 text-center"></i>
+					<i class="fas fa-home text-sm w-5 text-center" aria-hidden="true"></i>
 					<span class="text-sm font-medium">Home</span>
 				</a>
 				<a href="#/call" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-surface-600 dark:text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-700/50 hover:text-surface-900 dark:hover:text-surface-100 transition-colors duration-150">
-					<i class="fas fa-video text-sm w-5 text-center"></i>
+					<i class="fas fa-video text-sm w-5 text-center" aria-hidden="true"></i>
 					<span class="text-sm font-medium">Call</span>
 				</a>
 				<a href="#/profile" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-surface-600 dark:text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-700/50 hover:text-surface-900 dark:hover:text-surface-100 transition-colors duration-150">
-					<i class="fas fa-user text-sm w-5 text-center"></i>
+					<i class="fas fa-user text-sm w-5 text-center" aria-hidden="true"></i>
 					<span class="text-sm font-medium">Profile</span>
 				</a>
 				<a href="#/settings" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-surface-600 dark:text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-700/50 hover:text-surface-900 dark:hover:text-surface-100 transition-colors duration-150">
-					<i class="fas fa-cog text-sm w-5 text-center"></i>
+					<i class="fas fa-cog text-sm w-5 text-center" aria-hidden="true"></i>
 					<span class="text-sm font-medium">Settings</span>
 				</a>
 			</nav>
 			
 			<div class="px-2 py-3 border-t border-surface-100/50 dark:border-surface-700/50">
 				<h3 class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-2 ml-2.5">Recent Calls</h3>
-				<div id="peer-list" class="space-y-2">
+				<div id="peer-list" class="space-y-2" aria-live="polite">
+					<!-- Dynamic content will be inserted here -->
 				</div>
 			</div>
 		</div>
 		
 		<div class="px-5 py-3 border-t border-surface-100/50 dark:border-surface-700/50 bg-surface-0 dark:bg-surface-800">
 			<button class="w-full flex items-center gap-2 px-3 py-2 text-sm text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors duration-150">
-				<i class="fas fa-right-from-bracket text-sm"></i>
+				<i class="fas fa-right-from-bracket text-sm" aria-hidden="true"></i>
 				<span>Sign Out</span>
 			</button>
 		</div>
 	</aside>
 	
-	<div id="overlay" class="fixed inset-0 bg-surface-900/50 dark:bg-surface-950/70 z-40 backdrop-blur-sm hidden"></div>
+	<!-- Overlay -->
+	<div id="overlay" class="fixed inset-0 bg-surface-700/90 dark:bg-surface-900/90 backdrop-blur-sm z-40 hidden" aria-hidden="true"></div>
 	
+	<!-- Main Content -->
 	<main class="w-full min-h-0 grow overflow-hidden">
 		<div class="w-full h-full flex flex-col max-w-5xl mx-auto">
 			<section id="views" class="w-full min-h-0 grow p-5 overflow-y-auto no-scrollbar">
-				<article id="home" class="hidden w-full h-fit flex flex-col items-center justify-center gap-9 my-8">
+				<!-- Home View -->
+				<article id="home" class="hidden w-full h-fit flex flex-col items-center justify-center gap-9 my-8" aria-labelledby="home-heading">
 					<div class="text-center space-y-3.5">
-						<h2 class="text-3xl md:text-4xl font-bold text-surface-900 dark:text-surface-100 tracking-tight leading-tight">Hello, <span data-name-short>there</span>! <span class="text-3xl">👋</span></h2>
+						<h2 id="home-heading" class="text-3xl md:text-4xl font-bold text-surface-900 dark:text-surface-100 tracking-tight leading-tight">Hello, <span data-name-short>there</span>! <span class="text-3xl" aria-hidden="true">👋</span></h2>
 						<p class="text-surface-600 dark:text-surface-400 text-base md:text-lg max-w-md leading-snug">Secure video calls with end-to-end encryption. Your conversations stay private.</p>
-						<p class="text-surface-400 dark:text-surface-600 text-sm md:text-base max-w-md leading-snug">Your are <span data-status>unavailable</span>!</p>
 					</div>
 					
 					<div class="w-full max-w-sm space-y-5">
 						<div class="relative">
-							<input id="input-peer-id" type="text" placeholder="Enter Peer's Id" class="w-full px-4 py-3.5 rounded-xl border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 shadow-soft dark:shadow-dark-soft text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
+							<label for="input-peer-id" class="sr-only">Enter Peer's ID</label>
+							<input id="input-peer-id" autocomplete="off" type="text" placeholder="Enter Peer's ID" class="w-full px-4 py-3.5 rounded-xl border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 shadow-soft dark:shadow-dark-soft text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
 							<div class="absolute right-3 top-1/2 -translate-y-1/2">
-								<button class="p-1.5 text-surface-400 dark:text-surface-500 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-150 rounded-lg">
-									<i class="far fa-copy text-xs"></i>
+								<button class="p-1.5 text-surface-400 dark:text-surface-500 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-150 rounded-lg" aria-label="Copy peer ID">
+									<i class="far fa-copy text-xs" aria-hidden="true"></i>
 								</button>
 							</div>
 						</div>
 						
 						<div class="flex flex-col gap-3">
 							<button id="btn-call-peer" class="w-full px-5 py-3.5 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-surface-0 font-medium rounded-xl shadow-medium hover:shadow-hard dark:shadow-dark-medium dark:hover:shadow-dark-hard transition-all duration-200 active:scale-95 flex items-center justify-center gap-2.5">
-								<i class="fas fa-video text-xs"></i>
+								<i class="fas fa-video text-xs" aria-hidden="true"></i>
 								<span>Call Peer</span>
 							</button>
 							
-							<div class="flex items-center gap-3 my-2">
+							<div class="flex items-center gap-3 my-2" aria-hidden="true">
 								<div class="grow h-px bg-surface-200 dark:bg-surface-700"></div>
 								<span class="text-surface-400 dark:text-surface-500 text-xs">or</span>
 								<div class="grow h-px bg-surface-200 dark:bg-surface-700"></div>
 							</div>
 							
 							<button id="btn-copy-id" class="w-full px-5 py-3.5 bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-primary-300 dark:hover:border-primary-500 text-surface-700 dark:text-surface-200 font-medium rounded-xl shadow-soft hover:shadow-medium dark:shadow-dark-soft dark:hover:shadow-dark-medium transition-all duration-200 active:scale-95 flex items-center justify-center gap-2.5">
-								<i class="fas fa-copy text-xs"></i>
+								<i class="fas fa-copy text-xs" aria-hidden="true"></i>
 								<span>Copy ID</span>
 							</button>
 							<button id="btn-share-url" class="w-full px-5 py-3.5 bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-primary-300 dark:hover:border-primary-500 text-surface-700 dark:text-surface-200 font-medium rounded-xl shadow-soft hover:shadow-medium dark:shadow-dark-soft dark:hover:shadow-dark-medium transition-all duration-200 active:scale-95 flex items-center justify-center gap-2.5">
-								<i class="fas fa-share text-xs"></i>
+								<i class="fas fa-share text-xs" aria-hidden="true"></i>
 								<span>Share URL</span>
 							</button>
 						</div>
 					</div>
 					
-					<div class="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-none">
+					<div class="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-none" aria-hidden="true">
 						<div class="w-28 h-28 rounded-full bg-primary-200 dark:bg-primary-900 opacity-20 dark:opacity-10 blur-3xl"></div>
 					</div>
 				</article>
 				
-				<article id="call" class="hidden w-full h-full flex items-center justify-center">
+				<!-- Call View -->
+				<article id="call" class="hidden w-full h-full flex items-center justify-center" aria-labelledby="call-heading">
 					<div class="w-full max-w-xl h-full md:aspect-[9/16] flex items-center justify-center bg-surface-900 rounded-2xl overflow-hidden relative border border-surface-900/10 dark:border-surface-800/50">
-						<video id="call-video-remote" class="w-full h-full object-cover" muted autoplay playsinline></video>
+						<video id="call-video-remote" class="w-full h-full object-cover" muted autoplay playsinline aria-label="Remote video stream"></video>
 						
 						<div class="absolute bottom-5 right-5 w-[5.4rem] h-[9.6rem] rounded-lg overflow-hidden shadow-hard dark:shadow-dark-hard border-2 border-surface-0/20 dark:border-surface-800/30 bg-surface-800">
-							<video id="call-video-local" class="w-full h-full object-cover" muted autoplay playsinline></video>
+							<video id="call-video-local" class="w-full h-full object-cover" muted autoplay playsinline aria-label="Local video stream"></video>
 							<div class="absolute top-2 left-2 bg-surface-900/60 dark:bg-surface-950/80 text-surface-0 text-2xs px-1.5 py-0.5 rounded-md">You</div>
 						</div>
 						
-						<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-surface-900/60 dark:bg-surface-950/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-hard dark:shadow-dark-hard border border-surface-0/20 dark:border-surface-800/30">
+						<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-surface-900/60 dark:bg-surface-950/80 px-3 py-2 rounded-full shadow-hard dark:shadow-dark-hard border border-surface-0/20 dark:border-surface-800/30">
 							<div id="call-controls-container" class="flex items-center gap-2">
-								<button id="btn-toggle-mute" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
-									<i class="fas fa-microphone text-base"></i>
+								<button id="btn-toggle-mute" aria-label="Toggle microphone" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
+									<i class="fas fa-microphone text-base" aria-hidden="true"></i>
 								</button>
-								<button id="btn-toggle-mask" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
-									<i class="fas fa-video text-base"></i>
+								<button id="btn-toggle-mask" aria-label="Toggle video" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
+									<i class="fas fa-video text-base" aria-hidden="true"></i>
 								</button>
-								<button id="btn-toggle-fullscreen" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
-									<i class="fas fa-expand text-base"></i>
+								<button id="btn-toggle-fullscreen" aria-label="Toggle fullscreen" class="w-10 h-10 rounded-full bg-surface-0/10 hover:bg-surface-0/20 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
+									<i class="fas fa-expand text-base" aria-hidden="true"></i>
 								</button>
-								<button id="btn-end-call" class="w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
-									<i class="fas fa-phone-slash text-base"></i>
+								<button id="btn-end-call" aria-label="End call" class="w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-surface-0 flex items-center justify-center transition-all duration-200 active:scale-95">
+									<i class="fas fa-phone-slash text-base" aria-hidden="true"></i>
 								</button>
 							</div>
 						</div>
 						
 						<!-- Network Stats Overlay -->
-						<details class="marker:content-none absolute top-4 left-4 bg-surface-900/70 dark:bg-surface-950/80 backdrop-blur-sm rounded-xl shadow-hard dark:shadow-dark-hard border border-surface-0/20 dark:border-surface-800/30 z-20 overflow-hidden">
-							<summary class="relative px-3 py-2 bg-surface-900/50 dark:bg-surface-800/50">
-								<div data-conn-indicator class="absolute top-2 left-7 w-2 h-2 rounded-full bg-green-400"></div>
+						<details class="marker:content-none absolute top-4 left-4 bg-surface-900/70 dark:bg-surface-950/80 rounded-xl shadow-hard dark:shadow-dark-hard border border-surface-0/20 dark:border-surface-800/30 z-20 overflow-hidden">
+							<summary class="relative px-3 py-2 bg-surface-900/50 dark:bg-surface-800/50 cursor-pointer list-none">
+								<div data-conn-indicator class="absolute top-2 left-7 w-2 h-2 rounded-full bg-green-400" aria-hidden="true"></div>
 								
 								<div id="current-peer-info" class="flex items-center gap-3">
 									<div class="w-6 h-6 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center overflow-hidden">
+										<i class="fas fa-user text-surface-600 dark:text-surface-300 text-xs" aria-hidden="true"></i>
 									</div>
 									<p class="text-sm leading-tight font-medium text-surface-0 dark:text-surface-100 truncate"></p>
 								</div>
 							</summary>
 							
 							<table class="text-xs text-surface-0 font-mono">
-								<!-- Header -->
 								<thead class="sr-only">
 									<tr class="bg-surface-900/50 dark:bg-surface-800/50 border-b border-surface-0/10 dark:border-surface-700/30">
 										<th class="px-3 py-2 text-left font-medium">Metric</th>
@@ -301,15 +314,12 @@
 									</tr>
 								</thead>
 								
-								<!-- Body -->
 								<tbody class="divide-y divide-surface-0/10 dark:divide-surface-700/30">
-									<!-- Connection Row -->
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400 flex items-center gap-1">Connection</td>
 										<td data-conn-label class="px-3 py-1.5 text-right text-surface-0">Excellent</td>
 									</tr>
 									
-									<!-- Latency Row -->
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Latency/RTT</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
@@ -317,7 +327,6 @@
 										</td>
 									</tr>
 									
-									<!-- Jitter Row -->
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Jitter</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
@@ -325,7 +334,6 @@
 										</td>
 									</tr>
 									
-									<!-- Lost Packets Row -->
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Packets lost</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
@@ -333,7 +341,6 @@
 										</td>
 									</tr>
 									
-									<!-- Bitrate Row -->
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Bitrate</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
@@ -343,35 +350,34 @@
 								</tbody>
 							</table>
 							
-							<!-- Footer -->
 							<div class="px-3 py-1.5 bg-surface-900/50 dark:bg-surface-800/50 text-center">
 								<span class="text-[0.65rem] text-surface-400 dark:text-surface-500">Call duration: <span data-call-duration class="tabular-nums">00:00</span></span>
 							</div>
 						</details>
-						
 					</div>
 				</article>
 				
-				<article id="settings" class="hidden w-full h-fit flex-col">
+				<!-- Settings View -->
+				<article id="settings" class="hidden w-full h-fit flex-col" aria-labelledby="settings-heading">
 					<div class="w-full max-w-sm mx-auto space-y-5">
-						<h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Settings</h2>
+						<h2 id="settings-heading" class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Settings</h2>
 						
 						<div class="bg-surface-0 dark:bg-surface-800 rounded-xl shadow-soft dark:shadow-dark-soft p-5 space-y-6 border border-surface-100 dark:border-surface-700">
 							<div class="space-y-1.5">
 								<h3 class="font-medium text-surface-800 dark:text-surface-200 text-base">Video & Audio</h3>
 								<div class="space-y-3.5 pt-1.5">
 									<div class="flex items-center justify-between">
-										<span class="text-surface-600 dark:text-surface-400 text-sm">Camera</span>
+										<label for="select-cameras" class="text-surface-600 dark:text-surface-400 text-sm">Camera</label>
 										<select id="select-cameras" class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
 										</select>
 									</div>
 									<div class="flex items-center justify-between">
-										<span class="text-surface-600 dark:text-surface-400 text-sm">Microphone</span>
+										<label for="select-microphones" class="text-surface-600 dark:text-surface-400 text-sm">Microphone</label>
 										<select id="select-microphones" class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
 										</select>
 									</div>
 									<div class="flex items-center justify-between">
-										<span class="text-surface-600 dark:text-surface-400 text-sm">Speaker</span>
+										<label for="select-speakers" class="text-surface-600 dark:text-surface-400 text-sm">Speaker</label>
 										<select id="select-speakers" class="px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 outline-none bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-200 text-sm w-40">
 										</select>
 									</div>
@@ -404,34 +410,30 @@
 									</div>
 								</div>
 							</div>
-							
-							<!-- <button class="w-full px-5 py-3 bg-primary-500 hover:bg-primary-600 text-surface-0 font-medium rounded-lg shadow-medium dark:shadow-dark-medium transition-colors duration-200 active:scale-95">
-								Save Settings
-							</button> -->
 						</div>
 					</div>
 				</article>
 				
-				<!-- Page 4 - Profile -->
-				<article id="profile" class="hidden w-full h-fit flex-col">
+				<!-- Profile View -->
+				<article id="profile" class="hidden w-full h-fit flex-col" aria-labelledby="profile-heading">
 					<div class="w-full max-w-sm mx-auto space-y-5">
-						<h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Your Profile</h2>
+						<h2 id="profile-heading" class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Your Profile</h2>
 						
 						<div class="bg-surface-0 dark:bg-surface-800 rounded-xl shadow-soft dark:shadow-dark-soft p-5 space-y-6 border border-surface-100 dark:border-surface-700">
 							<div class="w-24 h-24 rounded-lg bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center shadow-medium mb-3.5 mx-auto overflow-hidden">
-								<i data-profile-placeholder class="fas fa-user text-surface-0 text-3xl"></i>
-								<img data-profile-picture class="hidden object-cover w-full h-full" src="" alt="profile picture">
+								<i data-profile-placeholder class="fas fa-user text-surface-0 text-3xl" aria-hidden="true"></i>
+								<img data-profile-picture class="hidden object-cover w-full h-full" src="" alt="Profile picture">
 							</div>
 							
 							<form id="form-update-profile" class="space-y-3.5">
 								<div>
-									<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Display Name</label>
-									<input name="name" type="text" placeholder="Full name" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
+									<label for="profile-name" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Display Name</label>
+									<input id="profile-name" name="name" type="text" placeholder="Full name" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
 								</div>
 								
 								<div>
-									<label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Profile Picture</label>
-									<input name="profilePicture" type="url" placeholder="image url" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
+									<label for="profile-picture" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Profile Picture</label>
+									<input id="profile-picture" name="profilePicture" type="url" placeholder="Image URL" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
 								</div>
 								
 								<div class="flex gap-3 pt-3">
@@ -448,33 +450,33 @@
 				</article>
 			</section>
 			
-			<!-- Navigation -->
-			<nav class="w-full px-5 py-2.5 bg-surface-0 dark:bg-surface-800 shadow-medium dark:shadow-dark-medium border-t border-surface-100/50 dark:border-surface-700/50">
+			<!-- Bottom Navigation -->
+			<nav class="w-full px-5 py-2.5 bg-surface-0 dark:bg-surface-800 shadow-medium dark:shadow-dark-medium border-t border-surface-100/50 dark:border-surface-700/50" aria-label="Primary navigation">
 				<div id="view-nav" class="flex items-center justify-around max-w-sm mx-auto">
-					<button data-page="home" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200">
+					<button data-page="home" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Home">
 						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
-							<i class="fas fa-home text-base"></i>
+							<i class="fas fa-home text-base" aria-hidden="true"></i>
 						</div>
 						<span class="text-xs font-medium">Home</span>
 					</button>
 					
-					<button data-page="call" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200">
+					<button data-page="call" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Call">
 						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
-							<i class="fas fa-video text-base"></i>
+							<i class="fas fa-video text-base" aria-hidden="true"></i>
 						</div>
 						<span class="text-xs font-medium">Call</span>
 					</button>
 					
-					<button data-page="settings" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200">
+					<button data-page="settings" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Settings">
 						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
-							<i class="fas fa-cog text-base"></i>
+							<i class="fas fa-cog text-base" aria-hidden="true"></i>
 						</div>
 						<span class="text-xs font-medium">Settings</span>
 					</button>
 					
-					<button data-page="profile" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200">
+					<button data-page="profile" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Profile">
 						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
-							<i class="fas fa-user text-base"></i>
+							<i class="fas fa-user text-base" aria-hidden="true"></i>
 						</div>
 						<span class="text-xs font-medium">Profile</span>
 					</button>
@@ -484,17 +486,20 @@
 	</main>
 	
 	<!-- Toast Container -->
-	<div id="toast-container" class="fixed top-6 inset-x-6 z-50 space-y-3 pointer-events-none">
+	<div id="toast-container" class="fixed top-6 inset-x-6 z-50 space-y-3 pointer-events-none" aria-live="assertive">
 	</div>
 	
 	<!-- Modal Container -->
-	<div id="modal" class="hidden fixed inset-0 flex items-center justify-center p-4 z-50">
+	<div id="modal" class="hidden fixed inset-0 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true">
 		<div class="w-full max-w-md bg-surface-0 dark:bg-surface-800 rounded-2xl shadow-xl dark:shadow-dark-hard border border-surface-200 dark:border-surface-700 overflow-hidden transform transition-all duration-300 scale-95">
 			<!-- Modal Header -->
 			<div class="px-5 py-4 border-b border-surface-100 dark:border-surface-700/50 flex items-center justify-between">
-				<h3 id="modal-heading" class="text-lg font-semibold text-surface-900 dark:text-surface-100">End Call?</h3>
-				<button id="btn-close-modal" class="text-surface-400 dark:text-surface-500 hover:text-surface-900 dark:hover:text-surface-100">
-					<i class="fas fa-times"></i>
+				<div class="flex items-center gap-4">
+					<div id="modal-spinner" class="size-6 rounded-full border-4 border-t-primary-500 animate-spin" aria-hidden="true"></div>
+					<h3 id="modal-heading" class="text-lg font-semibold text-surface-900 dark:text-surface-100">End Call?</h3>
+				</div>
+				<button id="btn-close-modal" class="text-surface-400 dark:text-surface-500 hover:text-surface-900 dark:hover:text-surface-100" aria-label="Close modal">
+					<i class="fas fa-times" aria-hidden="true"></i>
 				</button>
 			</div>
 			
@@ -515,9 +520,27 @@
 		</div>
 	</div>
 	
-	<audio id="call-audio-remote" autoplay></audio>
+	<!-- Loading Screen -->
+	<div id="loading-screen" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-surface-50/80 dark:bg-surface-900/80 backdrop-blur-sm transition-opacity duration-200">
+		<div id="spinner" class="relative w-8 h-8 mb-4" aria-hidden="true">
+			<div class="absolute inset-0 rounded-full border-4 border-surface-200 dark:border-surface-700"></div>
+			<div class="absolute inset-0 rounded-full border-4 border-t-primary-500 animate-spin"></div>
+		</div>
+		
+		<div class="text-center space-y-1">
+			<h3 data-status-head class="text-lg font-medium text-surface-900 dark:text-surface-100"></h3>
+			<p data-status-text class="text-sm text-surface-500 dark:text-surface-400"></p>
+		</div>
+	</div>
+	
+	<!-- Remote Audio (hidden) -->
+	<audio id="call-audio-remote" autoplay aria-hidden="true"></audio>
+	
+	<!-- Scripts -->
+	<script src="https://cdn.tailwindcss.com/"></script>
+	<script src="./tailwind.config.js"></script>
 	<script defer src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-	<script defer src="./script.js" type="text/javascript" charset="utf-8"></script>
+	<script defer src="./script.js"></script>
 </body>
 
 </html>
