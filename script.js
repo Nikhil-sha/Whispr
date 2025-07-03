@@ -2044,6 +2044,7 @@ function setupCallEvents(call) {
  });
  
  call.on('close', () => {
+  closeModalById('calling');
   createToast('info', 'Call ended', 'The remote peer disconnected');
   cleanupCallResources();
  });
