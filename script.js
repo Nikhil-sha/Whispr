@@ -2050,6 +2050,7 @@ function setupCallEvents(call) {
  });
  
  call.on('error', (err) => {
+  closeModalById('calling');
   createToast('error', 'Call error', err.message);
   cleanupCallResources();
  });
