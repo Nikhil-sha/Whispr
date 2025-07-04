@@ -326,28 +326,28 @@
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Latency/RTT</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
-											<span data-conn-latency class="tabular-nums">142</span> ms
+											<span data-conn-latency class="tabular-nums">N/A</span>
 										</td>
 									</tr>
 									
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Jitter</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
-											<span data-conn-jitter class="tabular-nums">0</span> ms
+											<span data-conn-jitter class="tabular-nums">N/A</span>
 										</td>
 									</tr>
 									
 									<tr>
 										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Packets lost</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
-											<span data-conn-packets class="tabular-nums">0</span>
+											<span data-conn-packets class="tabular-nums">N/A</span>
 										</td>
 									</tr>
 									
 									<tr>
-										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Bitrate</td>
+										<td class="px-3 py-1.5 text-surface-300 dark:text-surface-400">Bitrate Sent</td>
 										<td class="px-3 py-1.5 text-right text-surface-0">
-											<span data-conn-bitrate class="tabular-nums">0</span> Mbps
+											<span data-conn-bitrate class="tabular-nums">N/A</span>
 										</td>
 									</tr>
 								</tbody>
@@ -360,12 +360,99 @@
 					</div>
 				</article>
 				
+				<article id="contacts" class="hidden w-full h-fit flex-col" aria-labelledby="contacts-heading">
+					<div class="w-full max-w-sm mx-auto space-y-5">
+						<h2 id="contacts-heading" class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Contacts</h2>
+						
+						<div class="bg-surface-0 dark:bg-surface-800 rounded-xl shadow-soft dark:shadow-dark-soft p-5 space-y-6 border border-surface-100 dark:border-surface-700">
+							<!-- Search Bar -->
+							<div class="relative">
+								<input id="contacts-search" type="text" placeholder="Search contacts..." class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
+								<div class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500">
+									<i class="fas fa-search"></i>
+								</div>
+							</div>
+							
+							<!-- Contacts List -->
+							<div class="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
+								<!-- Contact Item Template -->
+								<template id="contact-template">
+									<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors duration-150 cursor-pointer contact-item">
+										<div class="flex-shrink-0 w-10 h-10 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center overflow-hidden">
+											<i class="fas fa-user text-surface-600 dark:text-surface-300 text-sm"></i>
+											<img class="hidden object-cover w-full h-full contact-image" src="" alt="Contact photo">
+										</div>
+										<div class="flex-1 min-w-0">
+											<p class="text-sm font-medium text-surface-900 dark:text-surface-100 truncate contact-name">John Doe</p>
+											<p class="text-xs text-surface-500 dark:text-surface-400 truncate contact-status">Last seen today</p>
+										</div>
+										<button class="p-2 text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 call-contact" aria-label="Call contact">
+											<i class="fas fa-phone"></i>
+										</button>
+									</div>
+								</template>
+								
+								<!-- Contacts will be dynamically inserted here -->
+								<div id="contacts-list">
+									<!-- Example contact (can be removed when implementing dynamic loading) -->
+									<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors duration-150 cursor-pointer">
+										<div class="flex-shrink-0 w-10 h-10 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center overflow-hidden">
+											<i class="fas fa-user text-surface-600 dark:text-surface-300 text-sm"></i>
+										</div>
+										<div class="flex-1 min-w-0">
+											<p class="text-sm font-medium text-surface-900 dark:text-surface-100 truncate">Jane Smith</p>
+											<p class="text-xs text-surface-500 dark:text-surface-400 truncate">Online now</p>
+										</div>
+										<button class="p-2 text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" aria-label="Call contact">
+											<i class="fas fa-phone"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Add Contact Button -->
+							<button id="add-contact-btn" class="w-full px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-surface-0 font-medium rounded-lg shadow-medium dark:shadow-dark-medium transition-colors duration-200 active:scale-95 flex items-center justify-center gap-2">
+								<i class="fas fa-user-plus"></i>
+								<span>Add Contact</span>
+							</button>
+						</div>
+					</div>
+				</article>
+				
 				<!-- Settings View -->
 				<article id="settings" class="hidden w-full h-fit flex-col" aria-labelledby="settings-heading">
 					<div class="w-full max-w-sm mx-auto space-y-5">
 						<h2 id="settings-heading" class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Settings</h2>
 						
 						<div class="bg-surface-0 dark:bg-surface-800 rounded-xl shadow-soft dark:shadow-dark-soft p-5 space-y-6 border border-surface-100 dark:border-surface-700">
+							<div class="space-y-3.5 pt-1.5">
+								<div class="w-24 h-24 rounded-lg bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center shadow-medium mb-3.5 mx-auto overflow-hidden">
+									<i data-profile-placeholder class="fas fa-user text-surface-0 text-3xl" aria-hidden="true"></i>
+									<img data-profile-picture class="hidden object-cover w-full h-full" src="" alt="Profile picture">
+								</div>
+								
+								<form id="form-update-profile" class="space-y-3.5">
+									<div>
+										<label for="profile-name" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Display Name</label>
+										<input id="profile-name" name="name" type="text" placeholder="Full name" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
+									</div>
+									
+									<div>
+										<label for="profile-picture" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Profile Picture</label>
+										<input id="profile-picture" name="profilePicture" type="url" placeholder="Image URL" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
+									</div>
+									
+									<div class="flex gap-3 pt-3">
+										<button type="reset" class="px-5 py-2.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-medium rounded-lg transition-colors duration-200 active:scale-95 flex-1">
+											Delete
+										</button>
+										<button type="submit" class="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-surface-0 font-medium rounded-lg shadow-medium dark:shadow-dark-medium transition-colors duration-200 active:scale-95 flex-1">
+											Save
+										</button>
+									</div>
+								</form>
+							</div>
+							
 							<div class="space-y-1.5">
 								<h3 class="font-medium text-surface-800 dark:text-surface-200 text-base">Video & Audio</h3>
 								<div class="space-y-3.5 pt-1.5">
@@ -416,41 +503,6 @@
 						</div>
 					</div>
 				</article>
-				
-				<!-- Profile View -->
-				<article id="profile" class="hidden w-full h-fit flex-col" aria-labelledby="profile-heading">
-					<div class="w-full max-w-sm mx-auto space-y-5">
-						<h2 id="profile-heading" class="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">Your Profile</h2>
-						
-						<div class="bg-surface-0 dark:bg-surface-800 rounded-xl shadow-soft dark:shadow-dark-soft p-5 space-y-6 border border-surface-100 dark:border-surface-700">
-							<div class="w-24 h-24 rounded-lg bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center shadow-medium mb-3.5 mx-auto overflow-hidden">
-								<i data-profile-placeholder class="fas fa-user text-surface-0 text-3xl" aria-hidden="true"></i>
-								<img data-profile-picture class="hidden object-cover w-full h-full" src="" alt="Profile picture">
-							</div>
-							
-							<form id="form-update-profile" class="space-y-3.5">
-								<div>
-									<label for="profile-name" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Display Name</label>
-									<input id="profile-name" name="name" type="text" placeholder="Full name" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
-								</div>
-								
-								<div>
-									<label for="profile-picture" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Profile Picture</label>
-									<input id="profile-picture" name="profilePicture" type="url" placeholder="Image URL" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 bg-surface-0 dark:bg-surface-800">
-								</div>
-								
-								<div class="flex gap-3 pt-3">
-									<button type="reset" class="px-5 py-2.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-medium rounded-lg transition-colors duration-200 active:scale-95 flex-1">
-										Delete
-									</button>
-									<button type="submit" class="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-surface-0 font-medium rounded-lg shadow-medium dark:shadow-dark-medium transition-colors duration-200 active:scale-95 flex-1">
-										Save
-									</button>
-								</div>
-							</form>
-						</div>
-					</div>
-				</article>
 			</section>
 			
 			<!-- Bottom Navigation -->
@@ -465,9 +517,16 @@
 					
 					<button data-page="call" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Call">
 						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
-							<i class="fas fa-video text-base" aria-hidden="true"></i>
+							<i class="fas fa-microphone text-base" aria-hidden="true"></i>
 						</div>
 						<span class="text-xs font-medium">Call</span>
+					</button>
+					
+					<button data-page="contacts" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Contacts">
+						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
+							<i class="fas fa-address-book text-base" aria-hidden="true"></i>
+						</div>
+						<span class="text-xs font-medium">Contacts</span>
 					</button>
 					
 					<button data-page="settings" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Settings">
@@ -476,17 +535,50 @@
 						</div>
 						<span class="text-xs font-medium">Settings</span>
 					</button>
-					
-					<button data-page="profile" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Profile">
-						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
-							<i class="fas fa-user text-base" aria-hidden="true"></i>
-						</div>
-						<span class="text-xs font-medium">Profile</span>
-					</button>
 				</div>
 			</nav>
 		</div>
 	</main>
+	
+	<!-- Add Contact Modal -->
+	<div id="add-contact-modal" class="hidden fixed inset-0 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true">
+		<div class="w-full max-w-md bg-surface-0 dark:bg-surface-800 rounded-2xl shadow-xl dark:shadow-dark-hard border border-surface-200 dark:border-surface-700 overflow-hidden transform transition-all duration-300 scale-95">
+			<div class="px-5 py-4 border-b border-surface-100 dark:border-surface-700/50 flex items-center justify-between">
+				<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Add New Contact</h3>
+				<button class="text-surface-400 dark:text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 close-add-contact" aria-label="Close modal">
+					<i class="fas fa-times"></i>
+				</button>
+			</div>
+			
+			<div class="p-5">
+				<form id="add-contact-form" class="space-y-4">
+					<div>
+						<label for="contact-name" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Name</label>
+						<input id="contact-name" type="text" required placeholder="Contact name" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
+					</div>
+					
+					<div>
+						<label for="contact-peer-id" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Peer ID</label>
+						<input id="contact-peer-id" type="text" required placeholder="Peer ID" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
+					</div>
+					
+					<div>
+						<label for="contact-image" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Profile Image URL (optional)</label>
+						<input id="contact-image" type="url" placeholder="https://example.com/photo.jpg" class="w-full px-4 py-2.5 rounded-lg border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
+					</div>
+				</form>
+			</div>
+			
+			<div class="px-5 py-4 border-t border-surface-100 dark:border-surface-700/50 flex justify-end gap-3">
+				<button class="px-4 py-2 text-sm font-medium text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50 rounded-lg transition-colors duration-150 close-add-contact">
+					Cancel
+				</button>
+				<button type="submit" form="add-contact-form" class="px-4 py-2 text-sm font-medium bg-primary-500 hover:bg-primary-600 text-surface-0 rounded-lg shadow-sm transition-colors duration-150">
+					Add Contact
+				</button>
+			</div>
+		</div>
+	</div>
 	
 	<!-- Toast Container -->
 	<div id="toast-container" class="fixed top-6 inset-x-6 z-50 space-y-3 pointer-events-none" aria-live="assertive">

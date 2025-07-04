@@ -1182,7 +1182,6 @@ let availableSpeakers = [];
 let selectedCamera = null;
 let selectedMic = null;
 let selectedSpeaker = null;
-let prefFacingMode = 'user';
 let profileData = null;
 let peerIdToCall = null;
 let storedPeerList = null;
@@ -1301,12 +1300,20 @@ function fadeEnter(element, opacity = 0) {
 }
 
 function toggleFullScreen() {
+ const icon = this.querySelector('i');
  if (!document.fullscreenElement) {
-  viewEls[1].firstElementChild.requestFullscreen().catch(err => {
-   createToast('error', 'Fullscreen failed', err.message);
-  });
+  viewEls[1].firstElementChild.requestFullscreen()
+   .then(() => {
+    icon.classList.remove('fa-expand');
+    icon.classList.add('fa-compress');
+   })
+   .catch(err => {
+    createToast('error', 'Fullscreen failed', err.message);
+   });
  } else {
   document.exitFullscreen();
+  icon.classList.remove('fa-compress');
+  icon.classList.add('fa-expand');
  }
 }
 
@@ -1400,9 +1407,12 @@ function showModal(id, heading, text, confirmCallback, cancelCallback = null, sp
   }
  };
  
+ modalConfirmBtn.classList.toggle('hidden', !confirmCallback);
  modalCancelBtn.classList.toggle('hidden', !cancelCallback);
  
- modalConfirmBtn.addEventListener('click', modalCallbacks.confirm);
+ if (confirmCallback) {
+  modalConfirmBtn.addEventListener('click', modalCallbacks.confirm);
+ }
  if (cancelCallback) {
   modalCancelBtn.addEventListener('click', modalCallbacks.cancel);
  }
@@ -1682,9 +1692,9 @@ async function getAvailableMediaDevices() {
   fillOptions(selectMicEl, availableMicrophones);
   fillOptions(selectSpeakerEl, availableSpeakers);
   
-  selectedCamera = availableCameras[0]?.deviceId || null;
-  selectedMic = availableMicrophones[0]?.deviceId || null;
-  selectedSpeaker = availableSpeakers[0]?.deviceId || null;
+  selectedCamera = availableCameras[0].deviceId || null;
+  selectedMic = availableMicrophones[0].deviceId || null;
+  selectedSpeaker = availableSpeakers[0].deviceId || null;
  } catch (error) {
   createToast('error', 'Media Access Error', 'Could not access media devices. Please check your permissions.');
   console.error('Media device access error:', error);
@@ -1737,33 +1747,33 @@ function generateId() {
 
 async function shareId(type = 'url') {
  try {
-  if (!peer?.id) {
-   createToast('error', 'Peer ID not available', 'Peer.js is not initialized yet. Refresh the page if this issue persists.');
+  if (!peer.id) {
+   createToast('error', 'Peer ID not available', 'Peer.js is not initialised yet. Refresh the page if this issue persists.');
    return;
   }
   
-  const text = type === 'url' ? `${baseUrl}?peer=${peer.id}` : peer.id;
-  const shareData = {
-   title: 'Whispr Connection',
-   text: type === 'url' ? 'Click to connect with me on Whispr:' : 'My Whispr ID:',
-   url: type === 'url' ? text : undefined
-  };
-  
-  try {
-   if (navigator.share) {
+  if (type === 'url') {
+   const shareData = {
+    title: 'Join my Whispr call!',
+    text: 'Click to connect with me:',
+    url: `${baseUrl}?peer=${peer.id}`
+   };
+   
+   try {
     await navigator.share(shareData);
-    createToast('success', 'Shared successfully!', 'The connection details have been shared.');
-   } else {
-    await navigator.clipboard.writeText(text);
-    createToast('success', 'Copied to clipboard!', type === 'url' ? 'The connection URL has been copied.' : 'Your peer ID has been copied.');
+    createToast('success', 'Link shared!', 'Wait for the person to join.');
+   } catch {
+    await navigator.clipboard.writeText(shareData.url);
+    createToast('error', 'Share failed!', 'Url copied to your clipboard. Share the url.');
    }
-  } catch (shareError) {
-   await navigator.clipboard.writeText(text);
-   createToast('info', 'Copied to clipboard!', 'The share API is not available, but the details were copied.');
+  } else {
+   await navigator.clipboard.writeText(peer.id);
+   createToast('success', 'Copied!', 'Share the ID');
   }
  } catch (err) {
-  createToast('error', 'Sharing failed', 'Could not share the connection details');
-  console.error('Sharing error:', err);
+  const text = type === 'url' ? `${baseUrl}?peer=${peer.id}` : peer.id;
+  createToast('error', 'Share failed', 'Try copying manually');
+  if (text) createToast('info', 'Copy this!', text);
  }
 }
 
@@ -1900,6 +1910,13 @@ async function checkConnection() {
 function setInCallInteractions(boolean) {
  Array.from(callControls).forEach(button => {
   button.disabled = !boolean;
+  if (!boolean) {
+   if (button.id === 'btn-toggle-mute') {
+    button.firstElementChild.className = 'fas fa-microphone text-base';
+   } else if (button.id === 'btn-toggle-mask') {
+    button.firstElementChild.className = 'fas fa-video text-base';
+   }
+  }
  });
 }
 
@@ -2124,7 +2141,7 @@ function setupPeerEventListeners() {
   showModal(
    'incoming_call',
    'Incoming call!',
-   `${call.metadata?.name || call.peer} is calling`,
+   `${call.metadata.name || call.peer} is calling`,
    answerCall,
    rejectCall
   );
@@ -2168,6 +2185,7 @@ function setupPeerEventListeners() {
  });
  
  peer.on('error', err => {
+  closeModalById('calling');
   createToast('error', 'Connection error', err.message);
   console.error('Peer error:', err);
  });
@@ -2203,7 +2221,7 @@ async function main() {
  // Setup event listeners
  callPeerBtn.addEventListener('click', () => {
   const input = document.getElementById('input-peer-id');
-  peerIdToCall = input?.value.trim();
+  peerIdToCall = input.value.trim();
   
   if (peerIdToCall) {
    callPeer(peerIdToCall);
