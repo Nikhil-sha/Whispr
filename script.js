@@ -1159,85 +1159,109 @@
 
 
 
-const savedPeerId = localStorage.getItem('whispr-peer-id') || generateId();
-const peer = new Peer(savedPeerId, { debug: 3 });
+const savedPeerId = localStorage.getItem('whispr-peer-id') || generateId(),
+ peer = new Peer(savedPeerId, { debug: 1 }),
+ urlRegEx = /^(https?|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
+ drawing = {
+  sendDrawingInterval: 35,
+  lastPointSentAt: 0,
+  minMoveDiff: 2,
+  isDrawing: false,
+  lastDrawn: null,
+  drawnStrokes: [],
+  currentStroke: null,
+  brushAlphaVal: 255,
+  currentDrawingTool: 'pen',
+  canvasTranslation: [0, 0, 1]
+ },
+ baseUrl = window.location.origin + window.location.pathname,
+ overlay = document.getElementById('overlay'),
+ toastContainer = document.getElementById('toast-container'),
+ successToastTemp = document.getElementById('template-toast-success'),
+ errorToastTemp = document.getElementById('template-toast-error'),
+ infoToastTemp = document.getElementById('template-toast-info'),
+ sidebarEl = document.getElementById('sidebar'),
+ openSidebarBtn = document.getElementById('btn-open-sidebar'),
+ toggleThemeBtn = document.getElementById('btn-toggle-theme'),
+ modalEl = document.getElementById('modal'),
+ modalSpinner = document.getElementById('modal-spinner'),
+ modalHeading = document.getElementById('modal-heading'),
+ modalText = document.getElementById('modal-text'),
+ modalCloseBtn = document.getElementById('btn-close-modal'),
+ modalCancelBtn = document.getElementById('btn-cancel-modal'),
+ modalConfirmBtn = document.getElementById('btn-confirm-modal'),
+ viewEls = document.getElementById('views').children,
+ viewNavBtns = document.getElementById('view-nav').children,
+ localVideoEl = document.getElementById('call-video-local'),
+ remoteVideoEl = document.getElementById('call-video-remote'),
+ remoteAudioEl = document.getElementById('call-audio-remote'),
+ callControls = document.getElementById('call-controls-container').children,
+ toggleMuteBtn = document.getElementById('btn-toggle-mute'),
+ toggleMaskBtn = document.getElementById('btn-toggle-mask'),
+ toggleFullscreenBtn = document.getElementById('btn-toggle-fullscreen'),
+ endCallBtn = document.getElementById('btn-end-call'),
+ selectCameraEl = document.getElementById('select-cameras'),
+ selectMicEl = document.getElementById('select-microphones'),
+ selectSpeakerEl = document.getElementById('select-speakers'),
+ profileForm = document.getElementById('form-update-profile'),
+ profileImages = document.querySelectorAll('img[data-profile-picture]'),
+ profileImageIcons = document.querySelectorAll('i[data-profile-placeholder]'),
+ shortNameEls = document.querySelectorAll('[data-name-short]'),
+ fullNameEls = document.querySelectorAll('[data-name-full]'),
+ statusHeadEls = document.querySelectorAll('[data-status-head]'),
+ statusTextEl = document.querySelector('[data-status-text]'),
+ callPeerBtn = document.getElementById('btn-call-peer'),
+ copyIdBtn = document.getElementById('btn-copy-id'),
+ shareUrlBtn = document.getElementById('btn-share-url'),
+ peerListContainer = document.getElementById('peer-list'),
+ currentPeerInfo = document.getElementById('current-peer-info'),
+ callDurationEl = document.querySelector('[data-call-duration]'),
+ connIndicatorEl = document.querySelector('[data-conn-indicator]'),
+ connLabelEl = document.querySelector('[data-conn-label]'),
+ connLatencyEl = document.querySelector('[data-conn-latency]'),
+ connJitterEl = document.querySelector('[data-conn-jitter]'),
+ connPacketsEl = document.querySelector('[data-conn-packets]'),
+ connBitrateEl = document.querySelector('[data-conn-bitrate]'),
+ drawingBoardEl = document.getElementById('canvas'),
+ drawingBoardContainer = drawingBoardEl.parentElement,
+ drawingCtx = drawingBoardEl.getContext('2d'),
+ brushColorEl = document.getElementById('strokeColor'),
+ brushAlphaEl = document.getElementById('strokeAlpha'),
+ strokeSizeEl = document.getElementById('strokeSize'),
+ brushToolEl = document.getElementById('paintbrush'),
+ eraserToolEl = document.getElementById('eraser'),
+ eraserSizeEl = document.getElementById('eraserSize'),
+ clearCanvasBtn = document.getElementById('clearCanvas'),
+ undoStrokeBtn = document.getElementById('undoStroke'),
+ downloadCanvasBtn = document.getElementById('downloadCanvas');
 
-let signal = null;
-let modalId = null;
-let modalCallbacks = null;
-let overlayCallback = null;
-let currentRoute = null;
-let localStream = null;
-let currentCall = null;
-let lastBytesSent = 0;
-let lastTimeStamp = 0;
-let connCheckupInterval = null;
-let callingTimeout = null;
-let rtcObject = null;
-let audioEnabled = true;
-let videoEnabled = true;
-let availableCameras = [];
-let availableMicrophones = [];
-let availableSpeakers = [];
-let selectedCamera = null;
-let selectedMic = null;
-let selectedSpeaker = null;
-let profileData = null;
-let peerIdToCall = null;
-let storedPeerList = null;
-let callStartTime = null;
-let callTimerInterval = null;
-let controller = null;
-
-const urlRegEx = /^(https?|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
-const baseUrl = window.location.origin + window.location.pathname;
-const overlay = document.getElementById('overlay');
-const toastContainer = document.getElementById('toast-container');
-const successToastTemp = document.getElementById('template-toast-success');
-const errorToastTemp = document.getElementById('template-toast-error');
-const infoToastTemp = document.getElementById('template-toast-info');
-const sidebarEl = document.getElementById('sidebar');
-const openSidebarBtn = document.getElementById('btn-open-sidebar');
-const toggleThemeBtn = document.getElementById('btn-toggle-theme');
-const modalEl = document.getElementById('modal');
-const modalSpinner = document.getElementById('modal-spinner');
-const modalHeading = document.getElementById('modal-heading');
-const modalText = document.getElementById('modal-text');
-const modalCloseBtn = document.getElementById('btn-close-modal');
-const modalCancelBtn = document.getElementById('btn-cancel-modal');
-const modalConfirmBtn = document.getElementById('btn-confirm-modal');
-const viewEls = document.getElementById('views').children;
-const viewNavBtns = document.getElementById('view-nav').children;
-const localVideoEl = document.getElementById('call-video-local');
-const remoteVideoEl = document.getElementById('call-video-remote');
-const remoteAudioEl = document.getElementById('call-audio-remote');
-const callControls = document.getElementById('call-controls-container').children;
-const toggleMuteBtn = document.getElementById('btn-toggle-mute');
-const toggleMaskBtn = document.getElementById('btn-toggle-mask');
-const toggleFullscreenBtn = document.getElementById('btn-toggle-fullscreen');
-const endCallBtn = document.getElementById('btn-end-call');
-const selectCameraEl = document.getElementById('select-cameras');
-const selectMicEl = document.getElementById('select-microphones');
-const selectSpeakerEl = document.getElementById('select-speakers');
-const profileForm = document.getElementById('form-update-profile');
-const profileImages = document.querySelectorAll('img[data-profile-picture]');
-const profileImageIcons = document.querySelectorAll('i[data-profile-placeholder]');
-const shortNameEls = document.querySelectorAll('[data-name-short]');
-const fullNameEls = document.querySelectorAll('[data-name-full]');
-const statusHeadEls = document.querySelectorAll('[data-status-head]');
-const statusTextEl = document.querySelector('[data-status-text]');
-const callPeerBtn = document.getElementById('btn-call-peer');
-const copyIdBtn = document.getElementById('btn-copy-id');
-const shareUrlBtn = document.getElementById('btn-share-url');
-const peerListContainer = document.getElementById('peer-list');
-const currentPeerInfo = document.getElementById('current-peer-info');
-const callDurationEl = document.querySelector('[data-call-duration]');
-const connIndicatorEl = document.querySelector('[data-conn-indicator]');
-const connLabelEl = document.querySelector('[data-conn-label]');
-const connLatencyEl = document.querySelector('[data-conn-latency]');
-const connJitterEl = document.querySelector('[data-conn-jitter]');
-const connPacketsEl = document.querySelector('[data-conn-packets]');
-const connBitrateEl = document.querySelector('[data-conn-bitrate]');
+let signal = null,
+ modalId = null,
+ modalCallbacks = null,
+ overlayCallback = null,
+ currentRoute = null,
+ localStream = null,
+ currentCall = null,
+ currentDataConn = null,
+ lastBytesSent = 0,
+ lastTimeStamp = 0,
+ connCheckupInterval = null,
+ callingTimeout = null,
+ rtcObject = null,
+ audioEnabled = true,
+ videoEnabled = true,
+ availableCameras = [],
+ availableMicrophones = [],
+ availableSpeakers = [],
+ selectedCamera = null,
+ selectedMic = null,
+ selectedSpeaker = null,
+ profileData = null,
+ peerIdToCall = null,
+ storedPeerList = null,
+ callStartTime = null,
+ callTimerInterval = null,
+ controller = null;
 
 function isOverlayVisible() {
  return !overlay.classList.contains('hidden');
@@ -1835,6 +1859,220 @@ async function initiateNewCall(peerId) {
  }
 }
 
+function resizeDrawingCanvas() {
+ const ratio = Math.max(window.devicePixelRatio || 1, 1);
+ const w = Math.max(1, Math.floor(drawingBoardContainer.clientWidth));
+ const h = Math.max(1, Math.floor(drawingBoardContainer.clientHeight));
+ drawingBoardEl.width = Math.floor(w * ratio);
+ drawingBoardEl.height = Math.floor(h * ratio);
+ drawingBoardEl.style.width = w + 'px';
+ drawingBoardEl.style.height = h + 'px';
+ drawingCtx.setTransform(ratio, 0, 0, ratio, 0, 0); // drawing in CSS pixels
+ // fill white background
+ drawingCtx.fillStyle = '#ffffff';
+ drawingCtx.fillRect(0, 0, drawingBoardEl.width / ratio, drawingBoardEl.height / ratio);
+ redrawDrawingCanvas();
+}
+
+function transformCanvas(transformType, transformValue) {
+ switch (transformType) {
+  case 'x':
+   drawing.canvasTranslation[0] = drawing.canvasTranslation[0] + transformValue;
+   break;
+   
+  case 'y':
+   drawing.canvasTranslation[1] = drawing.canvasTranslation[1] + transformValue;
+   break;
+   
+  case 's':
+   if (drawing.canvasTranslation[2] >= 3 || drawing.canvasTranslation[2] <= 0.5) break;
+   drawing.canvasTranslation[2] = drawing.canvasTranslation[2] + transformValue;
+   break;
+   
+  default:
+   drawing.canvasTranslation = [0, 0, 0.8];
+ }
+ 
+ drawingBoardContainer.style.transform = `translateX(${drawing.canvasTranslation[0]}px) translateY(${drawing.canvasTranslation[1]}px) scale(${drawing.canvasTranslation[2]})`;
+ resizeDrawingCanvas();
+}
+
+function setStrokeStyle(tool, color, size) {
+ if (tool === 'eraser') {
+  drawingCtx.globalCompositeOperation = 'destination-out';
+  drawingCtx.lineWidth = size;
+ }
+ else {
+  drawingCtx.globalCompositeOperation = 'source-over';
+  drawingCtx.lineWidth = size;
+  drawingCtx.strokeStyle = color;
+  drawingCtx.lineCap = 'round';
+  drawingCtx.lineJoin = 'round';
+ }
+}
+
+function setDrawingTool(newTool) {
+ drawing.currentDrawingTool = newTool;
+}
+
+function redrawDrawingCanvas() {
+ drawingCtx.clearRect(0, 0, drawingBoardEl.width / devicePixelRatio, drawingBoardEl.height / devicePixelRatio);
+ for (const s of drawing.drawnStrokes) {
+  if (!s || s.length < 1) continue;
+  drawSmoothedStroke(s);
+ }
+}
+
+function drawSmoothedStroke(points) {
+ if (!points || points.length === 0) return;
+ const meta = points.meta || { tool: 'pen', color: 'rgba(0, 0, 0, 0.25)', size: 4 };
+ setStrokeStyle(meta.tool, meta.color, meta.size);
+ drawingCtx.beginPath();
+ if (points.length === 1) {
+  const p = points[0];
+  drawingCtx.moveTo(p.x, p.y);
+  drawingCtx.lineTo(p.x + 0.01, p.y + 0.01); // tiny dot
+  drawingCtx.stroke();
+  return;
+ }
+ // midpoint smoothing: p0 -> p1 -> p2, draw quadratic curve
+ drawingCtx.moveTo(points[0].x, points[0].y);
+ for (let i = 1; i < points.length - 1; i++) {
+  const p0 = points[i - 1],
+   p1 = points[i],
+   p2 = points[i + 1];
+  const cx = p1.x;
+  const cy = p1.y;
+  const mx = (p1.x + p2.x) / 2;
+  const my = (p1.y + p2.y) / 2;
+  drawingCtx.quadraticCurveTo(cx, cy, mx, my);
+ }
+ // final line to last
+ const last = points[points.length - 1];
+ drawingCtx.lineTo(last.x, last.y);
+ drawingCtx.stroke();
+}
+
+function toCanvasCoords(e) {
+ const rect = drawingBoardContainer.getBoundingClientRect(); // transformed rect in screen coords
+ let px, py;
+ // point within transformed container in screen pixels
+ if (e.touches) {
+  px = e.touches[0].clientX - rect.left;
+  py = e.touches[0].clientY - rect.top;
+ } else {
+  px = e.clientX - rect.left;
+  py = e.clientY - rect.top;
+ }
+ // invert scale: canvas logical (CSS) pixel = px / scale
+ const x = px / drawing.canvasTranslation[2];
+ const y = py / drawing.canvasTranslation[2];
+ return { x, y };
+}
+
+function startDraw(e) {
+ drawing.isDrawing = true;
+ drawing.lastDrawn = toCanvasCoords(e);
+ drawing.brushAlphaVal = parseInt(brushAlphaEl.value);
+ drawing.currentStroke = [];
+ drawing.currentStroke.meta = {
+  tool: drawing.currentDrawingTool,
+  color: brushColorEl.value.concat(drawing.brushAlphaVal.toString(16)),
+  size: strokeSizeEl.value
+ };
+ drawing.currentStroke.push(drawing.lastDrawn);
+ 
+ // ✅ draw first dot immediately
+ redrawDrawingCanvas();
+ drawSmoothedStroke(drawing.currentStroke);
+ 
+ sendOverDataConn({ type: 'draw_begin', meta: drawing.currentStroke.meta, point: drawing.lastDrawn });
+}
+
+function moveDraw(e) {
+ if (!drawing.isDrawing) return;
+ const p = toCanvasCoords(e);
+ // distance filter
+ const dx = p.x - drawing.lastDrawn.x,
+  dy = p.y - drawing.lastDrawn.y;
+ if (Math.hypot(dx, dy) < drawing.minMoveDiff) return;
+ drawing.currentStroke.push(p);
+ // incremental draw locally using smoothing (we'll just redraw entire stroke for simplicity)
+ redrawDrawingCanvas();
+ // drawSmoothedStroke(drawing.currentStroke.concat()); // temporary draw
+ drawSmoothedStroke(drawing.currentStroke);
+ drawing.lastDrawn = p;
+ 
+ const now = performance.now();
+ if (now - drawing.lastPointSentAt >= drawing.sendDrawingInterval) {
+  drawing.lastPointSentAt = now;
+  sendOverDataConn({ type: 'draw_move', point: p });
+ }
+}
+
+function endDraw() {
+ if (!drawing.isDrawing) return;
+ drawing.isDrawing = false;
+ drawing.drawnStrokes.push(drawing.currentStroke);
+ 
+ // ✅ ensure single-dot strokes render immediately
+ redrawDrawingCanvas();
+ 
+ sendOverDataConn({ type: 'draw_end' });
+ drawing.currentStroke = null;
+}
+
+function sendOverDataConn(dataToSend) {
+ if (currentDataConn && currentDataConn.open) currentDataConn.send(dataToSend);
+}
+
+function handleIncomingData(d) {
+ if (!d || !d.type) return;
+ switch (d.type) {
+  case 'metadata': {
+   const time = getDateAndTime();
+   updatePeerList({
+    time,
+    id: conn.peer,
+    ...data
+   });
+   
+   updateCurrentPeer('set', data.name, data.profilePicture);
+   break;
+  }
+  case 'draw_begin': {
+   const s = [];
+   s.meta = d.meta || { tool: 'pen', color: '#000', size: 4 };
+   s.push(d.point);
+   drawing.drawnStrokes.push(s);
+   redrawDrawingCanvas();
+   break;
+  }
+  case 'draw_move': {
+   const s = drawing.drawnStrokes[drawing.drawnStrokes.length - 1];
+   if (s) {
+    s.push(d.point);
+    redrawDrawingCanvas();
+   }
+   break;
+  }
+  case 'draw_end': {
+   redrawDrawingCanvas();
+   break;
+  }
+  case 'clear':
+   drawing.drawnStrokes = [];
+   redrawDrawingCanvas();
+   break;
+  case 'undo':
+   drawing.drawnStrokes.pop();
+   redrawDrawingCanvas();
+   break;
+  default:
+   break;
+ }
+}
+
 async function checkConnection() {
  if (!rtcObject) {
   console.warn("No active RTCPeerConnection to check");
@@ -2110,18 +2348,16 @@ function setupPeerEventListeners() {
      call.answer(stream);
      
      // Exchange metadata via data connection
-     const dataConn = peer.connect(call.peer);
+     currentDataConn = peer.connect(call.peer);
      
-     dataConn.on('open', () => {
-      dataConn.send({
+     currentDataConn.on('open', () => {
+      sendOverDataConn({
        type: 'metadata',
        ...profileData
       });
-      
-      setTimeout(() => {
-       if (dataConn.open) dataConn.close();
-      }, 1000);
      });
+     
+     currentDataConn.on('data', data => handleIncomingData(data));
      
      setupCallEvents(call);
      createToast('success', 'Call answered!', `Connected with ${peerInfo.name || 'Anonymous'}`);
@@ -2148,18 +2384,13 @@ function setupPeerEventListeners() {
  });
  
  peer.on('connection', conn => {
-  conn.on('data', data => {
-   if (data.type === 'metadata') {
-    const time = getDateAndTime();
-    updatePeerList({
-     time,
-     id: conn.peer,
-     ...data
-    });
-    
-    updateCurrentPeer('set', data.name, data.profilePicture);
-   }
-  });
+  if (currentDataConn) {
+   createToast('info', 'Already Connected!', 'Someone trying to connect to your Data Connection.');
+   return;
+  }
+  
+  conn.on('data', data => handleIncomingData(data));
+  currentDataConn = conn;
  });
  
  peer.on('disconnected', () => {
@@ -2239,6 +2470,46 @@ async function main() {
  toggleFullscreenBtn.addEventListener('click', toggleFullScreen, { signal });
  endCallBtn.addEventListener('click', endCall, { signal });
  
+ drawingBoardEl.addEventListener('mousedown', startDraw, { signal });
+ drawingBoardEl.addEventListener('mousemove', moveDraw, { signal });
+ window.addEventListener('mouseup', endDraw, { signal });
+ drawingBoardEl.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  startDraw(e);
+ }, { passive: false, signal });
+ drawingBoardEl.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  moveDraw(e);
+ }, { passive: false, signal });
+ drawingBoardEl.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  endDraw(e);
+ }, { passive: false, signal });
+ 
+ brushToolEl.addEventListener('click', () => setDrawingTool('pen'), { signal });
+ 
+ eraserToolEl.addEventListener('click', () => setDrawingTool('eraser'), { signal });
+ 
+ clearCanvasBtn.addEventListener('click', () => {
+  drawing.drawnStrokes = [];
+  redrawDrawingCanvas();
+  sendOverDataConn({ type: 'clear' });
+ }, { signal });
+ 
+ undoStrokeBtn.addEventListener('click', () => {
+  drawing.drawnStrokes.pop();
+  redrawDrawingCanvas();
+  sendOverDataConn({ type: 'undo' });
+ }, { signal });
+ 
+ downloadCanvasBtn.addEventListener('click', () => {
+  const anchor = document.createElement('a'),
+   randNum = Math.floor(Math.random() * 10000);
+  anchor.download = `whispr-whiteboard-${randNum}.png`;
+  anchor.href = drawingBoardEl.toDataURL();
+  anchor.click();
+ }, { signal });
+ 
  copyIdBtn.addEventListener('click', () => shareId('id'), { signal });
  shareUrlBtn.addEventListener('click', () => shareId('url'), { signal });
  
@@ -2282,6 +2553,7 @@ async function main() {
  }, { signal });
  
  window.addEventListener('hashchange', resolveRouter, { signal });
+ window.addEventListener('resize', resizeDrawingCanvas, { signal });
  
  // Initialize app components
  setInCallInteractions(false);
@@ -2291,6 +2563,7 @@ async function main() {
  getAvailableMediaDevices();
  resolveRouter('home');
  updateCurrentPeer('reset');
+ resizeDrawingCanvas();
  
  // Show initialization status
  showModal(

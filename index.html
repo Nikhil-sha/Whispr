@@ -13,22 +13,43 @@
 	<!-- Preload critical resources -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-	<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
-	<link rel="preload" href="https://cdn.tailwindcss.com" as="script">
+	<!-- <link rel="preload" href="https://cdn.tailwindcss.com" as="script"> -->
 	
 	<!-- Fonts & Icons -->
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	
-	<script src="https://cdn.tailwindcss.com/"></script>
+	<!-- <script src="https://cdn.tailwindcss.com/"></script> -->
+	<script src="./Tailwind@3.4.16.js"></script>
 	<script src="./tailwind.config.js"></script>
 	
 	<style>
+		html,
+		body {
+			overscroll-behavior: none;
+		}
+		
 		/* Critical CSS */
 		[role="button"],
 		button,
 		[type="button"] {
 			-webkit-tap-highlight-color: transparent;
+		}
+		
+		input[type="color"] {
+			padding: 0;
+		}
+		
+		input[type="color"]::-webkit-color-swatch-wrapper {
+			padding: 0;
+		}
+		
+		input[type="color"]::-webkit-color-swatch {
+			border: none;
+		}
+		
+		input[type="color"]::-moz-color-swatch {
+			border: none;
 		}
 		
 		.no-scrollbar::-webkit-scrollbar {
@@ -236,7 +257,7 @@
 							<input id="input-peer-id" autocomplete="off" type="text" placeholder="Enter Peer's ID" class="w-full px-4 py-3.5 rounded-xl border border-surface-200 dark:border-surface-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 outline-none transition-all duration-200 shadow-soft dark:shadow-dark-soft text-surface-800 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-500 bg-surface-0 dark:bg-surface-800">
 							<div class="absolute right-3 top-1/2 -translate-y-1/2">
 								<button class="p-1.5 text-surface-400 dark:text-surface-500 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-150 rounded-lg" aria-label="Copy peer ID">
-									<i class="far fa-copy text-xs" aria-hidden="true"></i>
+									<i class="fas fa-copy text-xs" aria-hidden="true"></i>
 								</button>
 							</div>
 						</div>
@@ -355,6 +376,92 @@
 							
 							<div class="px-3 py-1.5 bg-surface-900/50 dark:bg-surface-800/50 text-center">
 								<span class="text-[0.65rem] text-surface-400 dark:text-surface-500">Call duration: <span data-call-duration class="tabular-nums">00:00</span></span>
+							</div>
+						</details>
+					</div>
+				</article>
+				
+				<article id="board" class="w-full h-full flex flex-col md:flex-row items-center justify-center md:items-start gap-4">
+					<div class="w-full max-w-xl rounded-2xl bg-surface-800 border border-surface-700/50 overflow-hidden">
+						<figure class="w-[300px] aspect-[2/3] transition-transform duration-150" style="transform-origin:0 0; touch-action:none; -webkit-user-select:none; user-select:none;">
+							<canvas id="canvas" class="w-full h-full bg-surface-0"></canvas>
+							<figcaption class="sr-only">Draw on the canvas.</figcaption>
+						</figure>
+					</div>
+					
+					<div class="w-full md:w-auto p-2.5 max-w-xl inline-flex md:flex-col items-center justify-between gap-2 rounded-2xl bg-surface-0 dark:bg-surface-800">
+						<button id="paintbrush" class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Brush">
+							<i class="fas fa-paintbrush text-base" aria-hidden="true"></i>
+						</button>
+						
+						<details class="relative">
+							<summary class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Stroke">
+								<i class="fas fa-palette text-base" aria-hidden="true"></i>
+							</summary>
+							
+							<div class="p-4 absolute bottom-14 left-1/2 transform -translate-x-1/2 bg-surface-0 dark:bg-surface-800 rounded-2xl border border-surface-100 dark:border-surface-700 flex flex-col items-start justify-center gap-1 shadow-medium dark:shadow-dark-medium">
+								<label for="strokeColor" class="w-full text-surface-600 dark:text-surface-400 text-xs leading-snug inline-flex justify-between">Colour <span>#ff7f00</span></label>
+								<input type="color" name="strokeColor" id="strokeColor" value="#ff7f00" class="w-full h-8 rounded-xl border border-surface-200 dark:border-surface-600 mb-2" />
+								<label for="strokeAlpha" class="w-full text-surface-600 dark:text-surface-400 text-xs leading-snug inline-flex justify-between">Alpha <span>0.25</span></label>
+								<input type="range" name="strokeAlpha" id="strokeAlpha" min="1" max="255" value="255" class="appearance-none h-2 rounded-full bg-surface-50 dark:bg-surface-700 mb-2" />
+								<label for="strokeSize" class="w-full text-surface-600 dark:text-surface-400 text-xs leading-snug inline-flex justify-between">Stroke <span>4px</span></label>
+								<input type="range" name="strokeSize" id="strokeSize" min="2" max="64" step="2" value="4" class="appearance-none h-2 rounded-full bg-surface-50 dark:bg-surface-700" />
+								<label for="eraserSize" class="w-full text-surface-600 dark:text-surface-400 text-xs leading-snug inline-flex justify-between">Eraser <span>4px</span></label>
+								<input type="range" name="eraserSize" id="eraserSize" min="2" max="64" step="4" value="10" class="appearance-none h-2 rounded-full bg-surface-50 dark:bg-surface-700" />
+							</div>
+						</details>
+						
+						<button id="eraser" class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Eraser">
+							<i class="fas fa-eraser text-base" aria-hidden="true"></i>
+						</button>
+						
+						<button id="undoStroke" class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Undo">
+							<i class="fas fa-rotate-left text-base" aria-hidden="true"></i>
+						</button>
+						
+						<details class="relative">
+							<summary class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Stroke">
+								<i class="fas fa-ellipsis-vertical text-base" aria-hidden="true"></i>
+							</summary>
+							
+							<div class="p-4 absolute bottom-14 right-0 bg-surface-0 dark:bg-surface-800 rounded-2xl border border-surface-100 dark:border-surface-700 flex flex-col items-start justify-center gap-3 shadow-medium dark:shadow-dark-medium">
+								<p class="text-surface-600 dark:text-surface-400 text-xs leading-snug">Use arrows to navigate canvas. Use the magnifying glass button to zoom canvas, and double click to reset zoom.</p>
+								
+								<div class="w-full grid grid-cols-3 gap-2 place-center">
+									<button onclick="transformCanvas('y', 20)" class="col-start-2 col-span-1 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Eraser">
+										<i class="fas fa-angle-up text-base" aria-hidden="true"></i>
+									</button>
+									
+									<button onclick="transformCanvas('x', 20)" class="col-start-1 col-span-1 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Eraser">
+										<i class="fas fa-angle-left text-base" aria-hidden="true"></i>
+									</button>
+									
+									<button onclick="transformCanvas('s', 0.5)" ondblclick="transformCanvas()" class="col-span-1 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Eraser">
+										<i class="fas fa-magnifying-glass text-base" aria-hidden="true"></i>
+									</button>
+									
+									<button onclick="transformCanvas('x', -20)" class="col-span-1 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Eraser">
+										<i class="fas fa-angle-right text-base" aria-hidden="true"></i>
+									</button>
+									
+									<button onclick="transformCanvas('y', -20)" class="col-start-2 col-span-1 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 flex flex-col items-center justify-center text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-200" aria-label="Eraser">
+										<i class="fas fa-angle-down text-base" aria-hidden="true"></i>
+									</button>
+								</div>
+								
+								<button id="clearCanvas" class="w-full inline-flex items-center gap-2 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Board">
+									<div class="flex-shrink-0 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 inline-flex items-center justify-center transition-colors duration-200">
+										<i class="fas fa-trash text-xs" aria-hidden="true"></i>
+									</div>
+									<span class="text-nowrap text-xs font-medium">Clear Canvas</span>
+								</button>
+								
+								<button id="downloadCanvas" class="w-full inline-flex items-center gap-2 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Board">
+									<div class="flex-shrink-0 w-8 h-8 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 inline-flex items-center justify-center transition-colors duration-200">
+										<i class="fas fa-download text-xs" aria-hidden="true"></i>
+									</div>
+									<span class="text-nowrap text-xs font-medium">Download Canvas</span>
+								</button>
 							</div>
 						</details>
 					</div>
@@ -507,7 +614,7 @@
 			
 			<!-- Bottom Navigation -->
 			<nav class="w-full px-5 py-2.5 bg-surface-0 dark:bg-surface-800 shadow-medium dark:shadow-dark-medium border-t border-surface-100/50 dark:border-surface-700/50" aria-label="Primary navigation">
-				<div id="view-nav" class="flex items-center justify-around max-w-sm mx-auto">
+				<div id="view-nav" class="flex items-center justify-between max-w-sm mx-auto">
 					<button data-page="home" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Home">
 						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
 							<i class="fas fa-home text-base" aria-hidden="true"></i>
@@ -520,6 +627,13 @@
 							<i class="fas fa-microphone text-base" aria-hidden="true"></i>
 						</div>
 						<span class="text-xs font-medium">Call</span>
+					</button>
+					
+					<button data-page="board" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Board">
+						<div class="w-11 h-11 rounded-xl bg-surface-50 dark:bg-surface-700 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 flex items-center justify-center transition-colors duration-200">
+							<i class="fas fa-chalkboard-user text-base" aria-hidden="true"></i>
+						</div>
+						<span class="text-xs font-medium">Board</span>
 					</button>
 					
 					<button data-page="contacts" class="flex flex-col items-center justify-center gap-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 group transition-colors duration-200" aria-label="Contacts">
@@ -634,6 +748,9 @@
 	<!-- Scripts -->
 	<script defer src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 	<script defer src="./script.js"></script>
+	<!-- <script src="board.js" type="text/javascript" charset="utf-8"></script> -->
 </body>
 
 </html>
+
+<!-- https://xhamster.desi/videos/korean-sex-xh4hiFD -->
