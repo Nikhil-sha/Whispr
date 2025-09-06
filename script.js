@@ -2033,7 +2033,7 @@ function handleIncomingData(d) {
    const time = getDateAndTime();
    updatePeerList({
     time,
-    id: conn.peer,
+    id: currentDataConn.peer,
     ...data
    });
    
