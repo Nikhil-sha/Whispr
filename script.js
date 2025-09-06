@@ -2034,10 +2034,10 @@ function handleIncomingData(d) {
    updatePeerList({
     time,
     id: currentDataConn.peer,
-    ...data
+    ...d
    });
    
-   updateCurrentPeer('set', data.name, data.profilePicture);
+   updateCurrentPeer('set', d.name, d.profilePicture);
    break;
   }
   case 'draw_begin': {
