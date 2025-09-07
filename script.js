@@ -1901,7 +1901,8 @@ function transformCanvas(transformType, transformValue) {
 function setStrokeStyle(tool, color, size) {
  if (tool === 'eraser') {
   drawingCtx.globalCompositeOperation = 'destination-out';
-  drawingCtx.lineWidth = size;
+  drawingCtx.lineWidth = eraserSizeEl.value;
+  drawingCtx.strokeStyle = color;
  }
  else {
   drawingCtx.globalCompositeOperation = 'source-over';
