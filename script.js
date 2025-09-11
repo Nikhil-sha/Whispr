@@ -2387,6 +2387,7 @@ function setupPeerEventListeners() {
     .catch(err => {
      createToast('error', 'Call failed', 'Could not access media devices');
      console.error('Media access error:', err);
+     cleanupCallResources();
     });
   };
   
@@ -2447,8 +2448,10 @@ function setupPeerEventListeners() {
  
  peer.on('error', err => {
   closeModalById('calling');
+  closeModalById('incoming_call');
   createToast('error', 'Connection error', err.message);
   console.error('Peer error:', err);
+  cleanupCallResources();
  });
 }
 
